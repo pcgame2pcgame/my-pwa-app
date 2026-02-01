@@ -38,7 +38,7 @@ jobs:
         
         # ایجاد فایل MainActivity.kt
         cat > app/src/main/java/com/gap/arana/MainActivity.kt << 'EOF'
-        package com.arana.gap
+        package com.gap.arana
         
         import android.annotation.SuppressLint
         import android.os.Bundle

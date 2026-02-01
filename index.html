@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>چت P2P با PeerJS</title>
+    <style>
+        body { font-family: Tahoma; max-width: 600px; margin: 20px auto; padding: 20px; }
+        #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+        #myId { background: #e9ffe9; padding: 5px; border: 1px dashed #2ecc71; }
+        input, button { padding: 10px; font-size: 16px; margin: 5px 0; box-sizing: border-box; }
+        button { background: #3498db; color: white; border: none; cursor: pointer; }
+        button:disabled { background: #95a5a6; }
+        .msg { margin: 5px 0; padding: 8px; border-radius: 5px; }
+        .local { background-color: #d1ecf1; text-align: left; }
+        .remote { background-color: #f8d7da; text-align: right; }
+    </style>
+</head>
+<body>
+    <h2>💬 چت مستقیم P2P (بدون سرور میانی)</h2>
+
+    <div>
+        <strong>شناسه شما:</strong>
+        <div id="myId">در حال اتصال...</div>
+    </div>
+
+    <hr>
+    <div>
+        <strong>برای اتصال به دوست:</strong><br>
+        <input type="text" id="friendId" placeholder="شناسه طرف مقابل را اینجا بچسبان">
+        <button onclick="connectToPeer()">اتصال</button>
+        <button onclick="copyMyId()">کپی شناسه من</button>
+    </div>
+
+    <hr>
+    <div id="status">🔴 قطع</div>
+
+    <div id="chat"></div>
+
+    <div>
+        <input type="text" id="messageInput" placeholder="پیامتان را اینجا بنویسید..." disabled>
+        <button onclick="sendMessage()" id="sendBtn" disabled>ارسال</button>
+    </div>
+
+    <!-- کتابخانه PeerJS را از CDN لود می‌کنیم -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script>
+        // 1. تنظیمات اولیه
+        let peer = null;
+        let activeConnection = null;
+
+        // 2. وقتی صفحه لود شد، یک Peer جدید ایجاد کن
+        window.onload = function() {
+            // استفاده از سرور سیگنالینگ رایگان PeerJS
+            peer = new Peer({
+                host: '0.peerjs.com',
+                port: 443,
+                path: '/',
+                debug: 2
+            });
+
+            peer.on('open', function(id) {
+                document.getElementById('myId').innerHTML = '<strong>' + id + '</strong>';
+                document.getElementById('status').innerHTML = '🟢 آنلاین - آماده اتصال';
+                document.getElementById('status').style.color = 'green';
+            });
+
+            peer.on('connection', function(conn) {
+                setupConnection(conn);
+                document.getElementById('status').innerHTML = '🟢 متصل شدید!';
+            });
+
+            peer.on('error', function(err) {
+                console.error('خطا:', err);
+                document.getElementById('status').innerHTML = '🔴 خطا: ' + err.type;
+            });
+        };
+
+        // 3. تابع برای اتصال به یک Peer دیگر
+        function connectToPeer() {
+            const friendId = document.getElementById('friendId').value.trim();
+            if (!friendId) return alert('لطفاً شناسه طرف مقابل را وارد کنید.');
+
+            const conn = peer.connect(friendId, { reliable: true });
+            setupConnection(conn);
+        }
+
+        // 4. راه‌اندازی کانکتور مشترک برای هر دو طرف
+        function setupConnection(conn) {
+            if (activeConnection) return;
+            activeConnection = conn;
+
+            conn.on('open', function() {
+                document.getElementById('status').innerHTML = '🟢 متصل به: ' + conn.peer;
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                addMessage('سیستم', 'اتصال برقرار شد! می‌توانید چت کنید.', 'system');
+            });
+
+            conn.on('data', function(data) {
+                addMessage('طرف مقابل', data, 'remote');
+            });
+
+            conn.on('close', function() {
+                document.getElementById('status').innerHTML = '🔴 اتصال قطع شد';
+                document.getElementById('messageInput').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+                activeConnection = null;
+                addMessage('سیستم', 'اتصال قطع شد.', 'system');
+            });
+        }
+
+        // 5. تابع ارسال پیام
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message || !activeConnection) return;
+
+            activeConnection.send(message);
+            addMessage('شما', message, 'local');
+            input.value = '';
+            input.focus();
+        }
+
+        // 6. تابع اضافه کردن پیام به صفحه چت
+        function addMessage(sender, text, type) {
+            const chatDiv = document.getElementById('chat');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg ' + type;
+            msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        // 7. تابع کمکی برای کپی کردن شناسه خودت
+        function copyMyId() {
+            const myId = document.getElementById('myId').textContent;
+            navigator.clipboard.writeText(myId).then(() => {
+                alert('شناسه شما کپی شد: ' + myId);
+            });
+        }
+
+        // 8. ارسال با کلید Enter
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

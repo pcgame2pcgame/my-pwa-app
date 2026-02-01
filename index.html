@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title> مستقیم </title>
+    <title>چت مستقیم P2P</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -32,6 +32,37 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow: hidden;
+        }
+        
+        /* نمایشگر وضعیت تماس در گوشه */
+        .call-status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--accent-green);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .call-status-indicator.ended {
+            border-color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.2);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         /* صفحه اول */
@@ -63,13 +94,6 @@
             background: var(--gradient-accent);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-        
-        .setup-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 30px;
         }
         
         .input-group { margin-bottom: 25px; text-align: right; }
@@ -128,11 +152,6 @@
         
         .btn-success {
             background: linear-gradient(135deg, var(--accent-teal), var(--accent-purple));
-            color: white;
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
         }
         
@@ -224,7 +243,6 @@
             flex-direction: column;
             gap: 15px;
             -webkit-overflow-scrolling: touch;
-            position: relative;
         }
         
         /* افکت دودی پس‌زمینه */
@@ -258,11 +276,6 @@
         .message:hover {
             border-color: var(--accent-purple);
             box-shadow: 0 5px 15px rgba(139, 92, 246, 0.1);
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
         .message.outgoing {
@@ -307,7 +320,6 @@
             border-right: 3px solid var(--accent-purple);
             border-radius: 12px;
             margin-bottom: 15px;
-            position: relative;
         }
         
         .reply-close {
@@ -514,7 +526,7 @@
             transform: scale(1.1);
         }
         
-        /* ویدیو کانتینر */
+        /* ویدیو کانتینر - فیکس شده */
         .video-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -533,8 +545,9 @@
             background: #000;
             border-radius: 20px;
             overflow: hidden;
-            aspect-ratio: 16/9;
+            aspect-ratio: 4/3;
             box-shadow: 0 10px 30px var(--shadow-dark);
+            min-height: 250px;
         }
         
         .video-wrapper.local {
@@ -550,6 +563,7 @@
             height: 100%;
             object-fit: cover;
             background: #000;
+            transform: rotateY(180deg); /* برای تصویر آینه‌ای */
         }
         
         .video-label {
@@ -570,7 +584,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -662,10 +676,17 @@
             .mode-btn { width: 50px; height: 50px; font-size: 1.4rem; }
             .call-btn { width: 60px; height: 60px; font-size: 1.6rem; }
             .setup-container { padding: 30px 20px; }
+            .video-wrapper { min-height: 200px; }
         }
     </style>
 </head>
 <body>
+    <!-- نمایشگر وضعیت تماس در گوشه -->
+    <div class="call-status-indicator" id="callStatusIndicator">
+        <span id="callStatusIcon">📞</span>
+        <span id="callStatusText">در حال تماس...</span>
+    </div>
+    
     <!-- صفحه اول: تنظیمات اتصال -->
     <div class="setup-page" id="setupPage">
         <div class="setup-container">
@@ -774,8 +795,8 @@
                         <div class="video-wrapper local">
                             <div class="video-label">📹 شما</div>
                             <video id="localVideo" autoplay muted playsinline></video>
-                            <div class="video-overlay" id="localVideoOverlay" style="display: none;">
-                                دوربین خاموش
+                            <div class="video-overlay" id="localVideoOverlay">
+                                دوربین شما
                             </div>
                         </div>
                         
@@ -853,7 +874,8 @@
         let friendCode = null;
         let currentMode = 'text';
         let isInCall = false;
-        let replyingTo = null; // برای ذخیره پیام ریپلای
+        let replyingTo = null;
+        let callEndedFlag = false; // فلگ برای جلوگیری از نمایش مکرر
 
         // ==================== مدیریت صفحات ====================
         function showChatPage() {
@@ -909,7 +931,7 @@
             });
             
             peer.on('disconnected', () => {
-                addSystemMessage('⚠️ اتصال به سرور قطع شد. تلاش برای اتصال مجدد...');
+                addSystemMessage('⚠️ اتصال به سرور قطع شد');
             });
         }
 
@@ -964,7 +986,12 @@
             });
             
             dataConnection.on('close', () => {
-                addDisconnectMessage('🔴 مخاطب دیسکانکت شده');
+                if (!callEndedFlag) {
+                    showCallStatus('🔴 تماس پایان یافت', true);
+                    setTimeout(() => {
+                        hideCallStatus();
+                    }, 3000);
+                }
                 endCall();
                 document.getElementById('sendBtn').disabled = true;
                 document.getElementById('connectedTo').textContent = '---';
@@ -972,11 +999,10 @@
             
             dataConnection.on('error', (err) => {
                 console.error('خطای اتصال داده:', err);
-                addSystemMessage('⚠️ خطا در اتصال داده');
             });
         }
 
-        // ==================== مدیریت تماس‌های رسانه‌ای ====================
+        // ==================== مدیریت تماس‌های رسانه‌ای - کاملاً اصلاح شده ====================
         async function toggleAudioCall() {
             if (!dataConnection || !dataConnection.open) {
                 showNotification('ابتدا باید به مخاطب متصل شوید.');
@@ -989,6 +1015,7 @@
             }
             
             try {
+                // دریافت استریم صوتی
                 localStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: true,
@@ -998,6 +1025,10 @@
                     video: false
                 });
                 
+                // نمایش وضعیت تماس
+                showCallStatus('📞 در حال تماس صوتی...', false);
+                
+                // ایجاد تماس
                 const call = peer.call(friendCode, localStream, {
                     metadata: { type: 'audio', caller: myCode }
                 });
@@ -1005,11 +1036,12 @@
                 mediaConnection = call;
                 setupMediaCall(call, 'audio');
                 
+                // تغییر UI
                 document.getElementById('audioCallBtn').style.display = 'none';
                 document.getElementById('endCallBtn').style.display = 'flex';
                 document.getElementById('callStatus').textContent = '📞 در حال تماس صوتی...';
                 
-                // درخواست تغییر حالت به مخاطب
+                // اطلاع به مخاطب برای تغییر حالت
                 dataConnection.send({
                     type: 'mode-change',
                     mode: 'audio',
@@ -1018,16 +1050,7 @@
                 
             } catch (err) {
                 console.error('خطا در شروع تماس صوتی:', err);
-                
-                if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                    showNotification('میکروفن پیدا نشد. از حالت متن استفاده کنید.');
-                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    showNotification('دسترسی به میکروفن رد شد. لطفاً مجوز را بررسی کنید.');
-                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                    showNotification('میکروفن در حال استفاده توسط برنامه دیگر است.');
-                } else {
-                    showNotification('خطا در دسترسی به میکروفن.');
-                }
+                handleMediaError(err, 'میکروفن');
             }
         }
         
@@ -1043,18 +1066,29 @@
             }
             
             try {
+                // دریافت استریم ویدیویی با تنظیمات بهینه
                 localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    },
                     video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'user'
+                        width: { ideal: 640, max: 1280 },
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 24, max: 30 },
+                        facingMode: "user"
                     }
                 });
                 
-                document.getElementById('localVideo').srcObject = localStream;
+                // نمایش ویدیوی محلی
+                const localVideo = document.getElementById('localVideo');
+                localVideo.srcObject = localStream;
                 document.getElementById('localVideoOverlay').style.display = 'none';
                 
+                // نمایش وضعیت تماس
+                showCallStatus('📹 در حال تماس ویدیویی...', false);
+                
+                // ایجاد تماس
                 const call = peer.call(friendCode, localStream, {
                     metadata: { type: 'video', caller: myCode }
                 });
@@ -1062,10 +1096,11 @@
                 mediaConnection = call;
                 setupMediaCall(call, 'video');
                 
+                // تغییر UI
                 document.getElementById('videoCallBtn').style.display = 'none';
                 document.getElementById('endVideoCallBtn').style.display = 'flex';
                 
-                // درخواست تغییر حالت به مخاطب
+                // اطلاع به مخاطب برای تغییر حالت
                 dataConnection.send({
                     type: 'mode-change',
                     mode: 'video',
@@ -1074,33 +1109,30 @@
                 
             } catch (err) {
                 console.error('خطا در شروع تماس ویدیویی:', err);
-                
-                if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                    showNotification('دوربین پیدا نشد. از حالت صوتی استفاده کنید.');
-                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    showNotification('دسترسی به دوربین رد شد. لطفاً مجوز را بررسی کنید.');
-                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                    showNotification('دوربین در حال استفاده توسط برنامه دیگر است.');
-                } else {
-                    showNotification('خطا در دسترسی به دوربین.');
-                }
+                handleMediaError(err, 'دوربین');
             }
         }
         
         async function handleIncomingCall(call) {
             try {
                 const metadata = call.metadata || {};
+                const callType = metadata.type || 'audio';
                 
-                if (metadata.type === 'video') {
+                if (callType === 'video') {
                     try {
+                        // تلاش برای دریافت ویدیو و صدا
                         localStream = await navigator.mediaDevices.getUserMedia({
                             audio: true,
-                            video: true
+                            video: {
+                                width: { ideal: 640 },
+                                height: { ideal: 480 },
+                                facingMode: "user"
+                            }
                         });
                         document.getElementById('localVideo').srcObject = localStream;
                         document.getElementById('localVideoOverlay').style.display = 'none';
                     } catch (err) {
-                        // اگر دوربین نداشت، فقط صدا بگیر
+                        // اگر ویدیو در دسترس نبود، فقط صدا بگیر
                         localStream = await navigator.mediaDevices.getUserMedia({
                             audio: true,
                             video: false
@@ -1114,25 +1146,39 @@
                     });
                 }
                 
+                // پاسخ به تماس
                 call.answer(localStream);
                 mediaConnection = call;
                 
                 call.on('stream', (stream) => {
-                    if (metadata.type === 'video') {
+                    console.log('جریان دریافتی:', stream);
+                    if (callType === 'video') {
                         remoteStream = stream;
-                        document.getElementById('remoteVideo').srcObject = remoteStream;
+                        const remoteVideo = document.getElementById('remoteVideo');
+                        remoteVideo.srcObject = remoteStream;
                         document.getElementById('remoteVideoOverlay').style.display = 'none';
+                        
+                        // رویداد برای پخش ویدیو
+                        remoteVideo.onloadedmetadata = () => {
+                            console.log('ویدیوی مخاطب آماده پخش است');
+                            remoteVideo.play().catch(e => console.error('خطای پخش ویدیو:', e));
+                        };
+                        
                         setMode('video');
+                        showCallStatus('📹 در حال تماس ویدیویی...', false);
                     } else {
+                        // برای تماس صوتی
                         const audio = new Audio();
                         audio.srcObject = stream;
-                        audio.play();
+                        audio.play().catch(e => console.error('خطای پخش صدا:', e));
                         setMode('audio');
+                        showCallStatus('📞 در حال تماس صوتی...', false);
                     }
                     
                     isInCall = true;
                     
-                    if (metadata.type === 'video') {
+                    // تغییر UI
+                    if (callType === 'video') {
                         document.getElementById('videoCallBtn').style.display = 'none';
                         document.getElementById('endVideoCallBtn').style.display = 'flex';
                     } else {
@@ -1141,82 +1187,115 @@
                         document.getElementById('callStatus').textContent = '📞 در حال تماس صوتی...';
                     }
                     
-                    showNotification(`📞 تماس ${metadata.type === 'video' ? 'ویدیویی' : 'صوتی'} دریافت شد.`);
+                    showNotification(`📞 تماس ${callType === 'video' ? 'ویدیویی' : 'صوتی'} برقرار شد.`);
                 });
                 
                 call.on('close', () => {
+                    if (isInCall && !callEndedFlag) {
+                        showCallStatus('📴 تماس پایان یافت', true);
+                        setTimeout(() => {
+                            hideCallStatus();
+                        }, 3000);
+                    }
+                    endCall();
+                });
+                
+                call.on('error', (err) => {
+                    console.error('خطای تماس:', err);
+                    addSystemMessage('⚠️ خطا در تماس');
                     endCall();
                 });
                 
             } catch (err) {
                 console.error('خطا در پاسخ به تماس:', err);
-                
-                if (err.name === 'NotAllowedError') {
-                    addSystemMessage('⚠️ دسترسی به میکروفن/دوربین رد شد.');
-                } else {
-                    addSystemMessage('⚠️ خطا در پاسخ به تماس.');
-                }
-                
-                call.close();
+                handleMediaError(err, 'دسترسی رسانه');
+                if (call) call.close();
             }
         }
         
         function setupMediaCall(call, type) {
             isInCall = true;
+            callEndedFlag = false;
             
             call.on('stream', (stream) => {
+                console.log('جریان ارسالی تنظیم شد:', stream);
                 if (type === 'video') {
                     remoteStream = stream;
-                    document.getElementById('remoteVideo').srcObject = remoteStream;
+                    const remoteVideo = document.getElementById('remoteVideo');
+                    remoteVideo.srcObject = remoteStream;
                     document.getElementById('remoteVideoOverlay').style.display = 'none';
+                    
+                    remoteVideo.onloadedmetadata = () => {
+                        console.log('ویدیوی مخاطب آماده پخش است');
+                        remoteVideo.play().catch(e => console.error('خطای پخش ویدیو:', e));
+                    };
                 } else {
-                    // برای تماس صوتی، صدا را پخش می‌کنیم
+                    // برای تماس صوتی
                     const audio = new Audio();
                     audio.srcObject = stream;
-                    audio.play();
+                    audio.play().catch(e => console.error('خطای پخش صدا:', e));
                 }
                 
                 showNotification(`✅ تماس ${type === 'video' ? 'ویدیویی' : 'صوتی'} برقرار شد.`);
             });
             
             call.on('close', () => {
-                addSystemMessage('📞 تماس پایان یافت.');
+                if (isInCall && !callEndedFlag) {
+                    showCallStatus('📴 تماس پایان یافت', true);
+                    setTimeout(() => {
+                        hideCallStatus();
+                    }, 3000);
+                }
+                endCall();
+            });
+            
+            call.on('error', (err) => {
+                console.error('خطای تماس:', err);
+                addSystemMessage('⚠️ خطا در تماس');
                 endCall();
             });
         }
         
         function endCall() {
+            callEndedFlag = true;
+            
+            // توقف استریم‌ها
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                localStream = null;
+            }
+            
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                remoteStream = null;
+            }
+            
+            // قطع اتصال رسانه
             if (mediaConnection) {
                 mediaConnection.close();
                 mediaConnection = null;
             }
             
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            if (remoteStream) {
-                remoteStream.getTracks().forEach(track => track.stop());
-                remoteStream = null;
-            }
-            
             isInCall = false;
             
-            // بازنشانی کنترل‌های تماس
+            // بازنشانی UI
             document.getElementById('audioCallBtn').style.display = 'flex';
             document.getElementById('endCallBtn').style.display = 'none';
             document.getElementById('videoCallBtn').style.display = 'flex';
             document.getElementById('endVideoCallBtn').style.display = 'none';
             document.getElementById('callStatus').textContent = 'آماده برای تماس صوتی';
             
-            // بازنشانی ویدیوها
+            // پاک کردن ویدیوها
             document.getElementById('localVideo').srcObject = null;
             document.getElementById('remoteVideo').srcObject = null;
             document.getElementById('localVideoOverlay').style.display = 'flex';
             document.getElementById('remoteVideoOverlay').style.display = 'flex';
             
-            // اعلام پایان تماس به مخاطب
+            // اطلاع به مخاطب
             if (dataConnection && dataConnection.open) {
                 dataConnection.send({
                     type: 'call-ended',
@@ -1225,6 +1304,7 @@
             }
             
             setMode('text');
+            hideCallStatus();
         }
         
         function toggleVideoMute() {
@@ -1232,8 +1312,10 @@
                 const audioTrack = localStream.getAudioTracks()[0];
                 if (audioTrack) {
                     audioTrack.enabled = !audioTrack.enabled;
-                    document.getElementById('videoMuteBtn').innerHTML = 
-                        audioTrack.enabled ? '<span>🎤</span>' : '<span>🔇</span>';
+                    const btn = document.getElementById('videoMuteBtn');
+                    btn.innerHTML = audioTrack.enabled ? '<span>🎤</span>' : '<span>🔇</span>';
+                    btn.style.background = audioTrack.enabled ? 
+                        'var(--gradient-accent)' : 'var(--gradient-danger)';
                 }
             }
         }
@@ -1243,12 +1325,52 @@
                 const videoTrack = localStream.getVideoTracks()[0];
                 if (videoTrack) {
                     videoTrack.enabled = !videoTrack.enabled;
-                    document.getElementById('videoToggleBtn').innerHTML = 
-                        videoTrack.enabled ? '<span>📷</span>' : '<span>📵</span>';
+                    const btn = document.getElementById('videoToggleBtn');
+                    btn.innerHTML = videoTrack.enabled ? '<span>📷</span>' : '<span>📵</span>';
+                    btn.style.background = videoTrack.enabled ? 
+                        'var(--gradient-accent)' : 'var(--gradient-danger)';
                     document.getElementById('localVideoOverlay').style.display = 
                         videoTrack.enabled ? 'none' : 'flex';
                 }
             }
+        }
+        
+        function handleMediaError(err, device) {
+            console.error(`خطای ${device}:`, err);
+            
+            if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                showNotification(`${device} پیدا نشد. لطفاً از حالت دیگر استفاده کنید.`);
+            } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                showNotification(`دسترسی به ${device} رد شد. لطفاً مجوز را در تنظیمات مرورگر بررسی کنید.`);
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                showNotification(`${device} در حال استفاده توسط برنامه دیگر است.`);
+            } else if (err.name === 'OverconstrainedError') {
+                showNotification(`${device} با مشخصات درخواستی سازگار نیست.`);
+            } else {
+                showNotification(`خطا در دسترسی به ${device}.`);
+            }
+        }
+
+        // ==================== مدیریت وضعیت تماس در گوشه ====================
+        function showCallStatus(text, isEnded = false) {
+            const indicator = document.getElementById('callStatusIndicator');
+            const icon = document.getElementById('callStatusIcon');
+            const statusText = document.getElementById('callStatusText');
+            
+            icon.textContent = isEnded ? '📴' : '📞';
+            statusText.textContent = text;
+            
+            indicator.style.display = 'flex';
+            if (isEnded) {
+                indicator.classList.add('ended');
+            } else {
+                indicator.classList.remove('ended');
+            }
+        }
+        
+        function hideCallStatus() {
+            const indicator = document.getElementById('callStatusIndicator');
+            indicator.style.display = 'none';
         }
 
         // ==================== ارسال پیام‌ها ====================
@@ -1263,7 +1385,7 @@
                 content: message,
                 sender: myCode,
                 timestamp: new Date().toISOString(),
-                replyTo: replyingTo // اضافه کردن اطلاعات ریپلای
+                replyTo: replyingTo
             };
             
             dataConnection.send(messageData);
@@ -1271,7 +1393,6 @@
             input.value = '';
             input.focus();
             
-            // پاک کردن ریپلای
             clearReply();
         }
         
@@ -1356,7 +1477,14 @@
                     break;
                     
                 case 'call-ended':
-                    addSystemMessage('📞 تماس توسط مخاطب پایان یافت.');
+                    // فقط یک بار نمایش داده شود
+                    if (!callEndedFlag) {
+                        showCallStatus('📴 تماس توسط مخاطب پایان یافت', true);
+                        setTimeout(() => {
+                            hideCallStatus();
+                        }, 3000);
+                        callEndedFlag = true;
+                    }
                     endCall();
                     break;
             }
@@ -1401,7 +1529,7 @@
             if (replyData) {
                 const replySender = replyData.sender === myCode ? 'شما' : 'مخاطب';
                 replyHTML = `
-                    <div class="message-reply" onclick="replyToMessage('${replyData.id}')">
+                    <div class="message-reply">
                         <div class="reply-badge">پاسخ</div>
                         <strong>${replySender}:</strong> ${replyData.content.substring(0, 50)}${replyData.content.length > 50 ? '...' : ''}
                     </div>
@@ -1413,14 +1541,11 @@
                 <div>${text}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <small class="message-time">${time}</small>
-                    <button class="reply-btn" onclick="setReply('${text}', '${type}')">
+                    <button class="reply-btn" onclick="setReply('${text.replace(/'/g, "\\'")}', '${type}')">
                         <span>↩️</span> پاسخ
                     </button>
                 </div>
             `;
-            
-            // ذخیره ID برای ریپلای
-            messageDiv.dataset.messageId = Date.now().toString();
             
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
@@ -1433,16 +1558,6 @@
             messageDiv.innerHTML = `<p>${text}</p>`;
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
-        }
-        
-        function addDisconnectMessage(text) {
-            const container = document.getElementById('messagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message system disconnect';
-            messageDiv.innerHTML = `<p>${text}</p>`;
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-            showNotification('مخاطب قطع شد.');
         }
         
         // ==================== قابلیت ریپلای ====================
@@ -1483,16 +1598,6 @@
             const replyIndicator = document.querySelector('.reply-indicator');
             if (replyIndicator) {
                 replyIndicator.remove();
-            }
-        }
-        
-        function replyToMessage(messageId) {
-            // یافتن پیام مربوطه و تنظیم ریپلای
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                const content = messageElement.querySelector('div').textContent;
-                const type = messageElement.classList.contains('outgoing') ? 'outgoing' : 'incoming';
-                setReply(content, type);
             }
         }
         
@@ -1539,6 +1644,8 @@
         }
         
         function disconnect() {
+            callEndedFlag = true;
+            
             if (dataConnection) dataConnection.close();
             if (mediaConnection) mediaConnection.close();
             if (peer) peer.destroy();
@@ -1562,6 +1669,7 @@
             
             // پاک کردن ریپلای
             clearReply();
+            hideCallStatus();
             
             // پاک کردن پیام‌ها
             document.getElementById('messagesContainer').innerHTML = `
@@ -1584,7 +1692,16 @@
             document.querySelectorAll('input[type="number"]').forEach(input => {
                 input.addEventListener('wheel', e => e.preventDefault());
             });
+            
+            // تست اولیه WebRTC
+            checkWebRTCAvailability();
         });
+        
+        function checkWebRTCAvailability() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.warn('WebRTC به طور کامل پشتیبانی نمی‌شود');
+            }
+        }
     </script>
 </body>
 </html>

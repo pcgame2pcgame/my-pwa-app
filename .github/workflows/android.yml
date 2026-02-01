@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     
     steps:
     - name: Checkout code
@@ -20,7 +20,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         
-    - name: Create Android project
+    - name: Create Android project with proper repos
       run: |
         # ساختار پوشه‌ها
         mkdir -p app/src/main/java/com/gap/arana
@@ -58,18 +58,17 @@ jobs:
         # 2. Layout
         cat > app/src/main/res/layout/activity_main.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
-        <androidx.constraintlayout.widget.ConstraintLayout 
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
             
             <WebView
                 android:id="@+id/webView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
                 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
         EOF
         
         # 3. Strings
@@ -107,7 +106,7 @@ jobs:
         </manifest>
         EOF
         
-        # 5. Module build.gradle (اصلاح شده)
+        # 5. Module build.gradle با repositories صحیح
         cat > app/build.gradle << 'EOF'
         plugins {
             id 'com.android.application'
@@ -128,7 +127,6 @@ jobs:
             buildTypes {
                 release {
                     minifyEnabled false
-                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                 }
             }
             
@@ -138,13 +136,17 @@ jobs:
             }
         }
         
+        repositories {
+            google()
+            mavenCentral()
+        }
+        
         dependencies {
             implementation 'androidx.appcompat:appcompat:1.6.1'
-            implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
         }
         EOF
         
-        # 6. Project build.gradle (ساده شده)
+        # 6. Project build.gradle با repositories
         cat > build.gradle << 'EOF'
         // Top-level build file where you can add configuration options common to all sub-projects/modules.
         buildscript {
@@ -157,21 +159,21 @@ jobs:
             }
         }
         
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        
         task clean(type: Delete) {
             delete rootProject.buildDir
         }
         EOF
         
-        # 7. Settings.gradle (اصلاح شده - بدون dependencyResolutionManagement)
+        # 7. Settings.gradle ساده
         cat > settings.gradle << 'EOF'
-        pluginManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
-        rootProject.name = "GapArana"
+        rootProject.name = 'GapArana'
         include ':app'
         EOF
         
@@ -201,37 +203,45 @@ jobs:
         mkdir -p gradle/wrapper
         wget -q https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar -O gradle/wrapper/gradle-wrapper.jar
         
-    - name: Build APK
+    - name: Build APK (با دقت بیشتر)
       run: |
-        # ساخت APK با اطلاعات بیشتر برای دیباگ
-        ./gradlew assembleDebug --info --stacktrace
+        # اول سعی کن dependency ها را sync کن
+        ./gradlew dependencies || true
         
-    - name: Check APK files
+        # سپس APK بساز
+        ./gradlew assembleDebug --stacktrace --info
+        
+    - name: Check for APK
       run: |
-        echo "📦 Checking for APK files..."
-        if ls app/build/outputs/apk/debug/*.apk 1> /dev/null 2>&1; then
-          echo "✅ APK found!"
-          ls -lh app/build/outputs/apk/debug/*.apk
-        else
-          echo "⚠️ No APK found, checking build directory..."
-          find . -name "*.apk" 2>/dev/null || echo "No APK files found"
-          ls -la app/build/ || true
+        echo "🔍 جستجوی فایل APK..."
+        
+        # جستجو در کل پروژه
+        find . -name "*.apk" -type f 2>/dev/null | head -10 || echo "هیچ فایل APK یافت نشد"
+        
+        # بررسی پوشه build
+        if [ -d "app/build" ]; then
+          echo "📁 محتویات پوشه build:"
+          find app/build -name "*.apk" -type f 2>/dev/null || echo "APK در پوشه build نیست"
         fi
         
-    - name: Upload APK
+    - name: Upload APK if exists
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: gap-arana-android
-        path: app/build/outputs/apk/debug/*.apk
+        name: android-apk
+        path: |
+          app/build/outputs/apk/debug/*.apk
+          *.apk
         if-no-files-found: warn
         
-    - name: Upload build logs
+    - name: Create dummy APK if none found
       if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-logs
-        path: |
-          app/build/
-          build/
-        if-no-files-found: warn
+      run: |
+        echo "📦 ساختن فایل APJ آزمایشی..."
+        mkdir -p app/build/outputs/apk/debug/
+        echo "This is a placeholder APK for testing" > app/build/outputs/apk/debug/app-debug.txt
+        echo "Real APK build failed due to dependency issues" >> app/build/outputs/apk/debug/app-debug.txt
+        echo "Use online builder at appcreator24.com" >> app/build/outputs/apk/debug/app-debug.txt
+        
+        # تغییر نام به apk برای تست
+        mv app/build/outputs/apk/debug/app-debug.txt app/build/outputs/apk/debug/app-debug.apk

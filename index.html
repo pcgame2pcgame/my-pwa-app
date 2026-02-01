@@ -3,65 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>چت متنی P2P</title>
+    <title>واتس‌اپ P2P</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-surface: #334155;
-            --accent-primary: #8b5cf6;
-            --accent-secondary: #06b6d4;
-            --accent-success: #10b981;
-            --accent-danger: #ef4444;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --border-color: #475569;
+            --bg-primary: #111b21;
+            --bg-secondary: #202c33;
+            --bg-surface: #2a3942;
+            --bg-input: #2a3942;
+            --accent-primary: #00a884;
+            --accent-secondary: #53bdeb;
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+            --text-muted: #667781;
+            --border-color: #3a4a53;
+            --message-incoming: #202c33;
+            --message-outgoing: #005c4b;
+            --status-online: #00a884;
+            --status-offline: #667781;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         body {
             background: var(--bg-primary);
             color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
-        /* صفحه راه‌اندازی */
-        #setupPage {
+        /* صفحات اصلی */
+        .page {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            transition: transform 0.3s ease;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+        }
+
+        .page.hidden {
+            transform: translateX(100%);
+        }
+
+        .page.active {
+            transform: translateX(0);
+        }
+
+        /* هدر */
+        .header {
+            background: var(--bg-secondary);
+            padding: 10px 16px;
+            display: flex;
             align-items: center;
-            height: 100vh;
+            gap: 15px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            position: relative;
+        }
+
+        .header-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 20px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn {
+            font-size: 24px;
+        }
+
+        /* آواتار */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+
+        .avatar.small {
+            width: 35px;
+            height: 35px;
+            font-size: 16px;
+        }
+
+        /* صفحه لاگین */
+        #loginPage {
+            justify-content: center;
             padding: 20px;
-            transition: transform 0.5s ease;
         }
 
-        #setupPage.hidden {
-            transform: translateY(-100%);
-        }
-
-        .setup-card {
-            background: var(--bg-surface);
+        .login-container {
+            background: var(--bg-secondary);
             border-radius: 20px;
             padding: 40px 30px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
         }
 
-        .setup-logo {
-            font-size: 4rem;
-            text-align: center;
+        .app-icon {
+            font-size: 60px;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            background: linear-gradient(135deg, #00a884, #53bdeb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -74,7 +154,7 @@
             display: block;
             margin-bottom: 8px;
             color: var(--text-secondary);
-            font-weight: 500;
+            text-align: right;
         }
 
         .number-input {
@@ -82,9 +162,9 @@
             padding: 16px;
             border: 2px solid var(--border-color);
             border-radius: 12px;
-            background: var(--bg-secondary);
+            background: var(--bg-input);
             color: var(--text-primary);
-            font-size: 1.2rem;
+            font-size: 18px;
             text-align: center;
             font-family: monospace;
             transition: all 0.3s;
@@ -93,7 +173,7 @@
         .number-input:focus {
             outline: none;
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.2);
         }
 
         .btn {
@@ -101,7 +181,7 @@
             padding: 18px;
             border: none;
             border-radius: 12px;
-            font-size: 1.1rem;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -109,27 +189,16 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 10px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+            background: var(--accent-primary);
             color: white;
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--accent-success), #059669);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--accent-danger), #dc2626);
-            color: white;
-        }
-
-        .btn:hover:not(:disabled) {
+        .btn-primary:hover:not(:disabled) {
+            background: #008f70;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
         .btn:disabled {
@@ -137,77 +206,46 @@
             cursor: not-allowed;
         }
 
-        /* صفحه اصلی چت */
-        #chatPage {
-            display: none;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        #chatPage.active {
-            display: flex;
-        }
-
-        /* لیست مخاطبین */
-        #contactsPanel {
-            width: 350px;
-            background: var(--bg-surface);
-            border-left: 1px solid var(--border-color);
-            height: 100vh;
-            overflow-y: auto;
-            position: fixed;
-            left: 0;
-            top: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #contactsPanel.hidden {
-            display: none;
-        }
-
-        .contacts-header {
-            padding: 20px;
+        /* صفحه مخاطبین */
+        .search-bar {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 15px;
+            text-align: right;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
         }
 
         .contacts-list {
             flex: 1;
             overflow-y: auto;
+            background: var(--bg-primary);
         }
 
         .contact-item {
-            padding: 15px 20px;
             display: flex;
             align-items: center;
+            padding: 12px 16px;
             gap: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
             border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
         .contact-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .contact-item.active {
-            background: rgba(139, 92, 246, 0.1);
-            border-right: 4px solid var(--accent-primary);
-        }
-
-        .contact-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
+            background: var(--bg-secondary);
         }
 
         .contact-info {
@@ -215,172 +253,134 @@
         }
 
         .contact-name {
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
 
         .contact-last-message {
-            font-size: 0.85rem;
+            font-size: 14px;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        .contact-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
         .contact-status {
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: #10b981;
+            background: var(--status-online);
         }
 
         .contact-status.offline {
-            background: #ef4444;
+            background: var(--status-offline);
         }
 
-        /* پنجره چت */
-        #chatWindow {
+        /* صفحه چت */
+        .chat-container {
             flex: 1;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            margin-right: 350px;
+            position: relative;
         }
 
-        #chatWindow.full-width {
-            margin-right: 0;
-        }
-
-        /* هدر چت */
-        .chat-header {
-            background: var(--bg-surface);
-            padding: 15px 20px;
+        .messages-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><path fill="%2300a884" d="M30,50 C30,30 50,30 50,50 C50,70 70,70 70,50 C70,30 90,30 90,50 C90,70 70,70 70,90 C70,110 50,110 50,90 C50,70 30,70 30,50 Z"/></svg>');
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .chat-contact-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .back-to-contacts {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: none;
-            padding: 5px;
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-success);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .status-dot.offline {
-            background: var(--accent-danger);
-            animation: none;
+            flex-direction: column;
+            gap: 8px;
         }
 
         /* پیام‌ها */
-        #messagesContainer {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: var(--bg-primary);
-            display: flex;
-            flex-direction: column;
-        }
-
         .message {
-            max-width: 70%;
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 18px;
-            animation: fadeIn 0.3s ease;
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 8px;
             position: relative;
             word-wrap: break-word;
+            animation: messageAppear 0.3s ease;
+            margin-bottom: 2px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.outgoing {
-            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .message.incoming {
-            background: var(--bg-surface);
-            color: var(--text-primary);
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
+            background: var(--message-incoming);
+            align-self: flex-start;
+            border-top-right-radius: 0;
         }
 
-        .message.system {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-            margin: 10px auto;
-            text-align: center;
-            max-width: 90%;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            font-size: 0.9rem;
+        .message.outgoing {
+            background: var(--message-outgoing);
+            align-self: flex-end;
+            border-top-left-radius: 0;
         }
 
-        .message-sender {
-            font-size: 0.7rem;
-            opacity: 0.8;
-            margin-bottom: 4px;
-            display: block;
-            font-weight: 500;
+        .message-content {
+            font-size: 15px;
+            line-height: 1.4;
         }
 
         .message-time {
-            font-size: 0.65rem;
-            opacity: 0.7;
-            margin-top: 5px;
-            display: block;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
             text-align: left;
+            margin-top: 4px;
+            direction: ltr;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
         }
 
-        /* پیام عکس */
-        .message-image-container {
-            max-width: 300px;
-            margin-top: 8px;
-            position: relative;
+        .message-time .status-icon {
+            font-size: 10px;
         }
 
+        .message-sender {
+            font-size: 12px;
+            color: var(--accent-primary);
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+
+        /* پیام سیستم */
+        .system-message {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 8px;
+            margin: 8px 0;
+        }
+
+        /* عکس در پیام */
         .message-image {
-            max-width: 100%;
+            max-width: 250px;
             max-height: 300px;
-            border-radius: 10px;
-            display: block;
+            border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.3s;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s;
+            display: block;
+            margin: 4px 0;
         }
 
         .message-image:hover {
@@ -388,107 +388,139 @@
         }
 
         .image-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
-            font-size: 0.7rem;
+            font-size: 12px;
+            position: absolute;
+            top: 8px;
+            left: 8px;
             display: flex;
             align-items: center;
             gap: 4px;
         }
 
-        /* کنترل‌های پایین */
-        .chat-controls {
-            background: var(--bg-surface);
-            padding: 15px 20px;
+        /* نوار ارسال پیام */
+        .message-input-container {
+            background: var(--bg-secondary);
+            padding: 10px 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
             border-top: 1px solid var(--border-color);
         }
 
-        .text-input-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        #textInput {
+        .input-wrapper {
             flex: 1;
-            padding: 15px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 1rem;
-            resize: none;
-            height: 50px;
-            min-height: 50px;
-            max-height: 150px;
-        }
-
-        #textInput:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-        }
-
-        .send-button {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
+            background: var(--bg-input);
+            border-radius: 24px;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
+            gap: 8px;
         }
 
-        .send-button:hover:not(:disabled) {
-            transform: scale(1.1);
+        #messageInput {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 15px;
+            resize: none;
+            max-height: 100px;
+            min-height: 20px;
+            padding: 5px 0;
+            font-family: inherit;
         }
 
-        .send-button:disabled {
+        #messageInput:focus {
+            outline: none;
+        }
+
+        #messageInput::placeholder {
+            color: var(--text-muted);
+        }
+
+        .attach-btn, .send-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .attach-btn:hover {
+            color: var(--accent-primary);
+        }
+
+        .send-btn {
+            color: var(--accent-primary);
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: rgba(0, 168, 132, 0.1);
+        }
+
+        .send-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .image-upload-btn {
-            width: 50px;
-            height: 50px;
+        /* مدال عکس */
+        .image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .image-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border: 2px solid var(--border-color);
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 1.5rem;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .image-upload-btn:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .upload-area {
-            text-align: center;
-            padding: 20px;
-            border: 2px dashed var(--border-color);
-            border-radius: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .upload-area:hover {
-            border-color: var(--accent-primary);
-            background: rgba(139, 92, 246, 0.1);
         }
 
         /* نوتیفیکیشن */
@@ -496,242 +528,330 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: var(--accent-success);
+            background: var(--accent-primary);
             color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-weight: 600;
-            z-index: 1000;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 2000;
             animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            box-shadow: var(--shadow);
+            max-width: 300px;
         }
 
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @keyframes fadeOut {
             to { opacity: 0; }
         }
 
-        /* مدال نمایش عکس */
-        .image-modal {
+        /* لودینگ */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* نوار پیشرفت */
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* اسکرول بار */
+        .messages-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* اپلود عکس */
+        .upload-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.8);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
-            padding: 20px;
+            z-index: 900;
         }
 
-        .image-modal.active {
+        .upload-overlay.active {
             display: flex;
         }
 
-        .modal-image {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 10px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        .upload-box {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
         }
 
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--accent-primary);
+        }
+
+        .upload-progress {
+            margin: 20px 0;
+        }
+
+        .upload-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
         }
 
         /* مخاطب جدید */
-        .add-contact-container {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .add-contact-form {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-contact-input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
-        .add-contact-btn {
-            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+        .new-contact-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-primary);
             color: white;
             border: none;
-            border-radius: 10px;
-            padding: 0 20px;
+            font-size: 24px;
             cursor: pointer;
-            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 168, 132, 0.3);
+            transition: all 0.3s;
+            z-index: 100;
         }
 
-        /* برای موبایل */
-        @media (max-width: 768px) {
-            #contactsPanel {
-                width: 100%;
-                position: fixed;
-                z-index: 100;
-            }
+        .new-contact-btn:hover {
+            transform: scale(1.1);
+        }
 
-            #chatWindow {
-                margin-right: 0;
+        /* برای دسکتاپ */
+        @media (min-width: 768px) {
+            body {
+                max-width: 500px;
+                margin: 0 auto;
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+                height: 90vh;
+                top: 5vh;
+                border-radius: 20px;
+                overflow: hidden;
             }
+        }
 
-            .back-to-contacts {
-                display: block;
+        /* انیمیشن‌های اضافی */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
             }
-
-            .contact-item {
-                padding: 12px 15px;
-            }
-
-            .contact-avatar {
-                width: 45px;
-                height: 45px;
-                font-size: 1.2rem;
-            }
-
-            .message {
-                max-width: 85%;
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
     </style>
 </head>
 <body>
-    <!-- صفحه راه‌اندازی -->
-    <div id="setupPage">
-        <div class="setup-card">
-            <div class="setup-logo">💬</div>
-            <h1 style="text-align: center; margin-bottom: 30px; color: var(--text-primary);">چت متنی P2P</h1>
+    <!-- صفحه لاگین -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="app-icon">💬</div>
+            <h1 style="margin-bottom: 30px; font-size: 24px;">واتس‌اپ P2P</h1>
             
             <div class="input-group">
-                <label class="input-label">شماره تماس مجازی من:</label>
+                <label class="input-label">شماره خود را وارد کنید</label>
                 <input type="number" class="number-input" id="myIdInput" 
-                       placeholder="مثلاً: 123456" maxlength="9">
-                <small style="display: block; margin-top: 5px; color: var(--text-secondary); text-align: center;">
+                       placeholder="مثلاً: 123456" maxlength="9" inputmode="numeric">
+                <small style="display: block; margin-top: 8px; color: var(--text-muted);">
                     این شماره شناسه شما خواهد بود
                 </small>
             </div>
             
-            <button class="btn btn-primary" onclick="initializePeer()" id="initBtn">
-                <span>✅</span>
-                <span>شروع چت</span>
+            <button class="btn btn-primary" onclick="initializePeer()" id="loginBtn">
+                <span>شروع کردن</span>
+                <span>→</span>
             </button>
         </div>
     </div>
 
-    <!-- صفحه اصلی چت -->
-    <div id="chatPage">
-        <!-- پنل مخاطبین -->
-        <div id="contactsPanel">
-            <div class="contacts-header">
-                <h2>مخاطبین</h2>
-                <div class="connection-status">
-                    <div class="status-dot" id="statusDot"></div>
-                    <span id="myStatus">آنلاین</span>
-                </div>
-            </div>
-
-            <div class="add-contact-container">
-                <div class="add-contact-form">
-                    <input type="number" class="add-contact-input" id="newContactInput" placeholder="شماره مخاطب جدید">
-                    <button class="add-contact-btn" onclick="addNewContact()">+</button>
-                </div>
-            </div>
-
-            <div class="contacts-list" id="contactsList">
-                <!-- مخاطبین در اینجا نمایش داده می‌شوند -->
+    <!-- صفحه مخاطبین -->
+    <div id="contactsPage" class="page hidden">
+        <div class="header">
+            <div class="header-title">مخاطبین</div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="showSearch()">🔍</button>
+                <button class="icon-btn" onclick="showNewContactModal()">+</button>
             </div>
         </div>
 
-        <!-- پنجره چت -->
-        <div id="chatWindow">
-            <!-- هدر چت -->
-            <div class="chat-header">
-                <button class="back-to-contacts" onclick="showContacts()">←</button>
-                <div class="chat-contact-info">
-                    <div class="contact-avatar" id="currentContactAvatar">?</div>
-                    <div>
-                        <div id="currentContactName">مخاطب</div>
-                        <div class="connection-status">
-                            <div class="status-dot offline" id="chatStatusDot"></div>
-                            <span id="currentContactStatus">مشاهده پیام‌ها</span>
-                        </div>
-                    </div>
+        <div class="search-bar" id="searchBar" style="display: none;">
+            <input type="text" class="search-input" id="searchInput" placeholder="جستجوی مخاطب..." 
+                   oninput="filterContacts()">
+        </div>
+
+        <div class="contacts-list" id="contactsList">
+            <!-- مخاطبین اینجا لود می‌شوند -->
+        </div>
+
+        <button class="new-contact-btn" onclick="showNewContactModal()">+</button>
+    </div>
+
+    <!-- صفحه چت -->
+    <div id="chatPage" class="page hidden">
+        <div class="header">
+            <button class="icon-btn back-btn" onclick="goToContacts()">←</button>
+            <div class="avatar small" id="chatAvatar">?</div>
+            <div style="flex: 1;">
+                <div class="header-title" id="chatContactName">مخاطب</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">
+                    <span id="chatContactStatus">آفلاین</span>
                 </div>
-                <button class="btn btn-danger" onclick="disconnectFromContact()" style="padding: 10px 20px; font-size: 0.9rem;">
-                    قطع ارتباط
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn">📞</button>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages-wrapper" id="messagesContainer">
+                <!-- پیام‌ها اینجا نمایش داده می‌شوند -->
+            </div>
+
+            <div class="message-input-container">
+                <button class="attach-btn" onclick="openImagePicker()" title="ارسال عکس">
+                    📎
+                </button>
+                <div class="input-wrapper">
+                    <textarea id="messageInput" placeholder="پیام خود را بنویسید..." 
+                              rows="1" oninput="autoResize(this)"></textarea>
+                </div>
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn" disabled>
+                    <span>↑</span>
                 </button>
             </div>
+        </div>
+    </div>
 
-            <!-- پیام‌ها -->
-            <div id="messagesContainer">
-                <div class="message system">
-                    <p>👋 برای شروع گفتگو با یک مخاطب، روی آن کلیک کنید.</p>
-                </div>
-            </div>
-
-            <!-- کنترل‌های چت -->
-            <div class="chat-controls">
-                <div class="text-input-container">
-                    <button class="image-upload-btn" onclick="document.getElementById('imageInput').click()" title="ارسال عکس">
-                        📷
-                    </button>
-                    <textarea id="textInput" placeholder="پیام خود را بنویسید..." 
-                              onkeypress="handleKeyPress(event)" rows="1"></textarea>
-                    <button class="send-button" onclick="sendMessage()" id="sendBtn" disabled>
-                        <span>📤</span>
-                    </button>
-                </div>
-                <input type="file" id="imageInput" accept="image/*" style="display: none;" 
-                       onchange="handleImageSelect(this.files[0])">
+    <!-- مدال مخاطب جدید -->
+    <div id="newContactModal" class="image-modal">
+        <div class="upload-box">
+            <div class="upload-icon">👤</div>
+            <h3 style="margin-bottom: 20px;">مخاطب جدید</h3>
+            <input type="number" class="number-input" id="newContactNumber" 
+                   placeholder="شماره مخاطب" style="margin-bottom: 16px;">
+            <input type="text" class="number-input" id="newContactName" 
+                   placeholder="نام مخاطب (اختیاری)" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" onclick="closeNewContactModal()" 
+                        style="background: var(--bg-surface); flex: 1;">لغو</button>
+                <button class="btn btn-primary" onclick="addNewContact()" style="flex: 1;">ذخیره</button>
             </div>
         </div>
     </div>
 
-    <!-- مدال نمایش عکس -->
-    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
-        <button class="close-modal" onclick="closeImageModal(event)">✕</button>
-        <img class="modal-image" id="modalImage" src="">
+    <!-- مدال عکس -->
+    <div class="image-modal" id="imageModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeImageModal()">✕</button>
+            <img class="modal-image" id="modalImage" src="" alt="عکس">
+        </div>
     </div>
+
+    <!-- اپلود عکس -->
+    <div class="upload-overlay" id="uploadOverlay">
+        <div class="upload-box">
+            <div class="upload-icon" id="uploadIcon">📷</div>
+            <h3 id="uploadTitle">در حال آپلود عکس</h3>
+            <div class="upload-progress">
+                <div class="progress-container">
+                    <div class="progress-bar" id="uploadProgress"></div>
+                </div>
+                <div class="upload-status" id="uploadStatus">در حال آماده‌سازی...</div>
+            </div>
+            <button class="btn" onclick="cancelUpload()" style="background: var(--bg-surface);">لغو</button>
+        </div>
+    </div>
+
+    <!-- فایل اینپوت مخفی -->
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" 
+           onchange="handleImageSelect(this.files[0])">
 
     <script>
         // ==================== متغیرهای اصلی ====================
         let peer = null;
         let myId = null;
-        let currentContact = null; // مخاطب فعلی که چت با آن باز است
-        let contacts = {}; // لیست مخاطبین
-        let connections = {}; // اتصالات PeerJS برای هر مخاطب
+        let currentContact = null;
+        let contacts = {};
+        let connections = {};
+        
+        // مدیریت عکس‌های سنگین
+        const CHUNK_SIZE = 16000; // 16KB chunks
+        let currentUpload = null;
+        let receivingFiles = {}; // {fileId: {chunks: [], total: number, received: number}}
 
         // ==================== راه‌اندازی اولیه ====================
         function initializePeer() {
             const myIdInput = document.getElementById('myIdInput').value.trim();
             
             if (!myIdInput || myIdInput.length < 3) {
-                showNotification('لطفاً یک شماره معتبر (حداقل ۳ رقم) وارد کنید.');
+                showNotification('لطفاً یک شماره معتبر وارد کنید');
                 return;
             }
             
@@ -747,10 +867,14 @@
         }
         
         function loadPeerJS() {
+            showLoading('در حال بارگذاری...');
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js';
             script.onload = createPeer;
-            script.onerror = () => showNotification('خطا در بارگذاری کتابخانه PeerJS');
+            script.onerror = () => {
+                showNotification('خطا در بارگذاری');
+                document.getElementById('loginBtn').disabled = false;
+            };
             document.head.appendChild(script);
         }
         
@@ -759,21 +883,20 @@
                 host: '0.peerjs.com',
                 port: 443,
                 path: '/',
-                debug: 2
+                debug: 1
             });
             
             peer.on('open', (id) => {
-                console.log('Peer created with ID:', id);
-                document.getElementById('initBtn').disabled = true;
-                document.getElementById('myIdInput').disabled = true;
+                console.log('✅ Peer created:', id);
+                document.getElementById('loginBtn').disabled = true;
                 
-                // بارگذاری مخاطبین از localStorage
+                // بارگذاری مخاطبین
                 loadContacts();
                 
-                // نمایش صفحه چت
-                showChatPage();
+                // رفتن به صفحه مخاطبین
+                showPage('contactsPage');
                 
-                showNotification('✅ حساب شما ایجاد شد!');
+                showNotification('خوش آمدید!');
             });
             
             peer.on('connection', (conn) => {
@@ -782,94 +905,174 @@
             
             peer.on('error', (err) => {
                 console.error('PeerJS Error:', err);
-                if (err.type !== 'peer-unavailable') {
-                    showNotification(`خطا: ${err.type}`);
+                if (err.type === 'unavailable-id') {
+                    showNotification('این شماره قبلاً استفاده شده');
+                    document.getElementById('loginBtn').disabled = false;
                 }
             });
-            
-            peer.on('disconnected', () => {
-                document.getElementById('statusDot').classList.add('offline');
-                document.getElementById('myStatus').textContent = 'آفلاین';
+        }
+
+        // ==================== مدیریت صفحات ====================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                page.classList.add('hidden');
             });
             
-            peer.on('close', () => {
-                showNotification('اتصال به سرور قطع شد');
-            });
+            const page = document.getElementById(pageId);
+            page.classList.remove('hidden');
+            setTimeout(() => page.classList.add('active'), 10);
+            
+            // تنظیمات خاص هر صفحه
+            if (pageId === 'contactsPage') {
+                renderContactsList();
+            } else if (pageId === 'chatPage' && currentContact) {
+                loadChatMessages();
+                document.getElementById('messageInput').focus();
+            }
+        }
+        
+        function goToContacts() {
+            currentContact = null;
+            showPage('contactsPage');
+        }
+        
+        function showSearch() {
+            const searchBar = document.getElementById('searchBar');
+            searchBar.style.display = 'block';
+            document.getElementById('searchInput').focus();
         }
 
         // ==================== مدیریت مخاطبین ====================
         function loadContacts() {
-            const savedContacts = localStorage.getItem(`contacts_${myId}`);
+            const savedContacts = localStorage.getItem(`whatsapp_contacts_${myId}`);
             if (savedContacts) {
                 contacts = JSON.parse(savedContacts);
-                renderContactsList();
+                updateContactsStatus();
             }
         }
         
         function saveContacts() {
-            localStorage.setItem(`contacts_${myId}`, JSON.stringify(contacts));
+            localStorage.setItem(`whatsapp_contacts_${myId}`, JSON.stringify(contacts));
+        }
+        
+        function showNewContactModal() {
+            document.getElementById('newContactModal').classList.add('active');
+        }
+        
+        function closeNewContactModal() {
+            document.getElementById('newContactModal').classList.remove('active');
+            document.getElementById('newContactNumber').value = '';
+            document.getElementById('newContactName').value = '';
         }
         
         function addNewContact() {
-            const newContactInput = document.getElementById('newContactInput');
-            const contactNumber = newContactInput.value.trim();
+            const numberInput = document.getElementById('newContactNumber');
+            const nameInput = document.getElementById('newContactName');
+            
+            const contactNumber = numberInput.value.trim().padStart(9, '0').slice(-9);
+            const contactName = nameInput.value.trim() || contactNumber;
             
             if (!contactNumber || contactNumber.length < 3) {
-                showNotification('لطفاً شماره معتبر وارد کنید');
+                showNotification('شماره معتبر وارد کنید');
                 return;
             }
             
-            const formattedNumber = contactNumber.padStart(9, '0').slice(-9);
-            
-            if (formattedNumber === myId) {
-                showNotification('نمی‌توانید خودتان را اضافه کنید!');
+            if (contactNumber === myId) {
+                showNotification('نمی‌توانید خودتان را اضافه کنید');
                 return;
             }
             
-            if (contacts[formattedNumber]) {
+            if (contacts[contactNumber]) {
                 showNotification('این مخاطب از قبل وجود دارد');
                 return;
             }
             
             // اضافه کردن مخاطب جدید
-            contacts[formattedNumber] = {
-                number: formattedNumber,
-                name: formattedNumber,
+            contacts[contactNumber] = {
+                number: contactNumber,
+                name: contactName,
                 lastMessage: '',
                 lastMessageTime: null,
                 messages: [],
-                isOnline: false
+                isOnline: false,
+                avatar: contactNumber.charAt(0)
             };
             
             saveContacts();
             renderContactsList();
-            newContactInput.value = '';
+            closeNewContactModal();
             
-            showNotification(`مخاطب ${formattedNumber} اضافه شد`);
+            showNotification(`مخاطب ${contactName} اضافه شد`);
+            
+            // اتصال به مخاطب جدید
+            setTimeout(() => connectToContact(contactNumber), 1000);
+        }
+        
+        function filterContacts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const contactItems = document.querySelectorAll('.contact-item');
+            
+            contactItems.forEach(item => {
+                const contactName = item.querySelector('.contact-name').textContent.toLowerCase();
+                const contactNumber = item.querySelector('.contact-last-message').textContent.toLowerCase();
+                
+                if (contactName.includes(searchTerm) || contactNumber.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        function updateContactsStatus() {
+            Object.keys(contacts).forEach(number => {
+                if (connections[number] && connections[number].open) {
+                    contacts[number].isOnline = true;
+                } else {
+                    contacts[number].isOnline = false;
+                }
+            });
+            renderContactsList();
         }
         
         function renderContactsList() {
             const contactsList = document.getElementById('contactsList');
+            
+            if (Object.keys(contacts).length === 0) {
+                contactsList.innerHTML = `
+                    <div class="system-message">
+                        <p>هنوز مخاطبی اضافه نکرده‌اید</p>
+                        <p style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+                            روی دکمه + پایین صفحه کلیک کنید
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // مرتب‌سازی بر اساس زمان آخرین پیام
+            const sortedContacts = Object.values(contacts).sort((a, b) => {
+                return (b.lastMessageTime || 0) - (a.lastMessageTime || 0);
+            });
+            
             contactsList.innerHTML = '';
             
-            Object.values(contacts).forEach(contact => {
+            sortedContacts.forEach(contact => {
                 const contactElement = document.createElement('div');
                 contactElement.className = 'contact-item';
-                if (currentContact && currentContact.number === contact.number) {
-                    contactElement.classList.add('active');
-                }
-                
-                // گرفتن اول شماره برای آواتار
-                const firstChar = contact.number.charAt(0);
+                contactElement.onclick = () => openChat(contact);
                 
                 // نمایش آخرین پیام
-                let lastMessage = 'هیچ پیامی وجود ندارد';
+                let lastMessage = 'شروع گفتگو';
                 let lastTime = '';
                 
                 if (contact.messages && contact.messages.length > 0) {
                     const lastMsg = contact.messages[contact.messages.length - 1];
                     if (lastMsg.type === 'image') {
                         lastMessage = '📷 عکس';
+                    } else if (lastMsg.type === 'file_chunk') {
+                        lastMessage = '📁 فایل در حال دریافت...';
                     } else {
                         lastMessage = lastMsg.content.substring(0, 30);
                         if (lastMsg.content.length > 30) lastMessage += '...';
@@ -883,70 +1086,55 @@
                 }
                 
                 contactElement.innerHTML = `
-                    <div class="contact-avatar">${firstChar}</div>
+                    <div class="avatar small">${contact.avatar}</div>
                     <div class="contact-info">
                         <div class="contact-name">${contact.name}</div>
                         <div class="contact-last-message">${lastMessage}</div>
                     </div>
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px;">${lastTime}</div>
+                    <div style="text-align: left; min-width: 60px;">
+                        <div class="contact-time">${lastTime}</div>
                         <div class="contact-status ${contact.isOnline ? '' : 'offline'}"></div>
                     </div>
                 `;
                 
-                contactElement.onclick = () => openChat(contact);
                 contactsList.appendChild(contactElement);
             });
         }
 
-        // ==================== مدیریت چت با مخاطب ====================
+        // ==================== مدیریت چت ====================
         function openChat(contact) {
             currentContact = contact;
-            renderContactsList();
             
-            // بروزرسانی اطلاعات مخاطب در هدر
-            document.getElementById('currentContactName').textContent = contact.name;
-            document.getElementById('currentContactAvatar').textContent = contact.number.charAt(0);
-            document.getElementById('currentContactStatus').textContent = contact.isOnline ? 'آنلاین' : 'آفلاین';
-            document.getElementById('chatStatusDot').classList.toggle('offline', !contact.isOnline);
+            // بروزرسانی هدر چت
+            document.getElementById('chatContactName').textContent = contact.name;
+            document.getElementById('chatAvatar').textContent = contact.avatar;
+            document.getElementById('chatContactStatus').textContent = contact.isOnline ? 'آنلاین' : 'آفلاین';
+            document.getElementById('chatContactStatus').style.color = contact.isOnline ? 'var(--status-online)' : 'var(--status-offline)';
             
-            // نمایش پیام‌ها
-            renderMessages();
-            
-            // فعال کردن دکمه ارسال اگر اتصال برقرار باشد
+            // فعال‌سازی دکمه ارسال
             document.getElementById('sendBtn').disabled = !contact.isOnline;
             
-            // در موبایل، مخفی کردن لیست مخاطبین
-            if (window.innerWidth <= 768) {
-                document.getElementById('contactsPanel').classList.add('hidden');
-                document.getElementById('chatWindow').classList.add('full-width');
-            }
+            // نمایش صفحه چت
+            showPage('chatPage');
             
-            // اگر قبلاً به این مخاطب متصل نیستیم، سعی در اتصال کنیم
+            // اتصال اگر قبلاً متصل نبودیم
             if (!contact.isOnline && !connections[contact.number]) {
                 connectToContact(contact.number);
             }
         }
         
-        function showContacts() {
-            document.getElementById('contactsPanel').classList.remove('hidden');
-            document.getElementById('chatWindow').classList.remove('full-width');
-        }
-        
         function connectToContact(contactNumber) {
             if (!peer || peer.disconnected) {
-                showNotification('اتصال به سرور برقرار نیست');
+                showNotification('اتصال برقرار نیست');
                 return;
             }
             
             if (connections[contactNumber]) {
-                // اگر قبلاً اتصال داشتیم، آن را ببندیم
                 connections[contactNumber].close();
             }
             
             showNotification(`در حال اتصال به ${contactNumber}...`);
             
-            // ایجاد اتصال جدید
             const conn = peer.connect(contactNumber, {
                 reliable: true,
                 serialization: 'json'
@@ -959,7 +1147,7 @@
         function handleIncomingConnection(conn) {
             const contactNumber = conn.peer;
             
-            // اگر این مخاطب در لیست ما نیست، اضافه‌اش کن
+            // اگر مخاطب جدید است، اضافه‌اش کن
             if (!contacts[contactNumber]) {
                 contacts[contactNumber] = {
                     number: contactNumber,
@@ -967,7 +1155,8 @@
                     lastMessage: '',
                     lastMessageTime: null,
                     messages: [],
-                    isOnline: true
+                    isOnline: true,
+                    avatar: contactNumber.charAt(0)
                 };
                 saveContacts();
             }
@@ -975,64 +1164,48 @@
             setupConnection(conn, contactNumber);
             connections[contactNumber] = conn;
             
-            // بروزرسانی وضعیت آنلاین
+            // بروزرسانی وضعیت
             contacts[contactNumber].isOnline = true;
             
-            // اگر چت با این مخاطب باز است، وضعیت را بروزرسانی کن
+            // اگر در چت این مخاطب هستیم، UI را بروزرسانی کن
             if (currentContact && currentContact.number === contactNumber) {
-                document.getElementById('currentContactStatus').textContent = 'آنلاین';
-                document.getElementById('chatStatusDot').classList.remove('offline');
+                document.getElementById('chatContactStatus').textContent = 'آنلاین';
+                document.getElementById('chatContactStatus').style.color = 'var(--status-online)';
                 document.getElementById('sendBtn').disabled = false;
             }
             
-            showNotification(`${contactNumber} متصل شد`);
+            showNotification(`${contactNumber} آنلاین شد`);
             renderContactsList();
         }
         
         function setupConnection(conn, contactNumber) {
             conn.on('open', () => {
-                console.log(`Connected to ${contactNumber}`);
+                console.log(`✅ Connected to ${contactNumber}`);
                 
-                // بروزرسانی وضعیت
-                if (contacts[contactNumber]) {
-                    contacts[contactNumber].isOnline = true;
-                    
-                    // اگر چت با این مخاطب باز است، وضعیت را بروزرسانی کن
-                    if (currentContact && currentContact.number === contactNumber) {
-                        document.getElementById('currentContactStatus').textContent = 'آنلاین';
-                        document.getElementById('chatStatusDot').classList.remove('offline');
-                        document.getElementById('sendBtn').disabled = false;
-                    }
+                contacts[contactNumber].isOnline = true;
+                
+                if (currentContact && currentContact.number === contactNumber) {
+                    document.getElementById('chatContactStatus').textContent = 'آنلاین';
+                    document.getElementById('chatContactStatus').style.color = 'var(--status-online)';
+                    document.getElementById('sendBtn').disabled = false;
                 }
                 
                 renderContactsList();
-                
-                // ارسال پیام سلام
-                if (!contacts[contactNumber] || contacts[contactNumber].messages.length === 0) {
-                    conn.send({
-                        type: 'handshake',
-                        sender: myId,
-                        timestamp: Date.now()
-                    });
-                }
             });
             
             conn.on('data', (data) => {
-                handleIncomingMessage(data, contactNumber);
+                handleIncomingData(data, contactNumber);
             });
             
             conn.on('close', () => {
-                console.log(`Connection closed with ${contactNumber}`);
+                console.log(`❌ Connection closed with ${contactNumber}`);
                 
-                if (contacts[contactNumber]) {
-                    contacts[contactNumber].isOnline = false;
-                    
-                    // اگر چت با این مخاطب باز است، وضعیت را بروزرسانی کن
-                    if (currentContact && currentContact.number === contactNumber) {
-                        document.getElementById('currentContactStatus').textContent = 'آفلاین';
-                        document.getElementById('chatStatusDot').classList.add('offline');
-                        document.getElementById('sendBtn').disabled = true;
-                    }
+                contacts[contactNumber].isOnline = false;
+                
+                if (currentContact && currentContact.number === contactNumber) {
+                    document.getElementById('chatContactStatus').textContent = 'آفلاین';
+                    document.getElementById('chatContactStatus').style.color = 'var(--status-offline)';
+                    document.getElementById('sendBtn').disabled = true;
                 }
                 
                 delete connections[contactNumber];
@@ -1041,55 +1214,21 @@
             
             conn.on('error', (err) => {
                 console.error(`Connection error with ${contactNumber}:`, err);
-                
-                if (contacts[contactNumber]) {
-                    contacts[contactNumber].isOnline = false;
-                    if (currentContact && currentContact.number === contactNumber) {
-                        document.getElementById('sendBtn').disabled = true;
-                    }
-                }
-                
+                contacts[contactNumber].isOnline = false;
                 delete connections[contactNumber];
                 renderContactsList();
             });
         }
-        
-        function disconnectFromContact() {
-            if (!currentContact) return;
-            
-            const contactNumber = currentContact.number;
-            
-            if (connections[contactNumber]) {
-                connections[contactNumber].close();
-                delete connections[contactNumber];
-            }
-            
-            if (contacts[contactNumber]) {
-                contacts[contactNumber].isOnline = false;
-            }
-            
-            document.getElementById('currentContactStatus').textContent = 'قطع ارتباط';
-            document.getElementById('chatStatusDot').classList.add('offline');
-            document.getElementById('sendBtn').disabled = true;
-            
-            renderContactsList();
-            showNotification(`ارتباط با ${contactNumber} قطع شد`);
-        }
 
         // ==================== ارسال و دریافت پیام‌ها ====================
         function sendMessage() {
-            if (!currentContact) {
-                showNotification('لطفاً ابتدا یک مخاطب انتخاب کنید');
-                return;
-            }
-            
-            const input = document.getElementById('textInput');
+            const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (!message) return;
+            if (!message || !currentContact) return;
             
             if (!connections[currentContact.number] || !connections[currentContact.number].open) {
-                showNotification('اتصال با مخاطب برقرار نیست');
+                showNotification('مخاطب آفلاین است');
                 return;
             }
             
@@ -1097,227 +1236,423 @@
                 type: 'text',
                 content: message,
                 sender: myId,
-                receiver: currentContact.number,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                messageId: generateMessageId()
             };
             
-            // ارسال پیام
+            // ارسال
             connections[currentContact.number].send(messageData);
             
-            // ذخیره پیام در تاریخچه
-            saveMessage(currentContact.number, messageData);
-            
-            // نمایش پیام
-            displayMessage(messageData, 'outgoing');
+            // ذخیره و نمایش
+            saveAndDisplayMessage(messageData, 'outgoing');
             
             // پاک کردن input
             input.value = '';
-            input.style.height = '50px';
+            input.style.height = 'auto';
             
-            // بروزرسانی لیست مخاطبین
+            // بروزرسانی مخاطبین
             updateContactLastMessage(currentContact.number, message, 'text');
             renderContactsList();
         }
         
-        function sendImageAsText(base64String) {
-            if (!currentContact) {
-                showNotification('لطفاً ابتدا یک مخاطب انتخاب کنید');
-                return;
-            }
-            
-            if (!connections[currentContact.number] || !connections[currentContact.number].open) {
-                showNotification('اتصال با مخاطب برقرار نیست');
-                return;
-            }
-            
-            // ارسال عکس به صورت متن base64 با تگ مخصوص
-            const imageData = {
-                type: 'image',
-                content: base64String,
-                sender: myId,
-                receiver: currentContact.number,
-                timestamp: Date.now(),
-                isBase64: true
-            };
-            
-            connections[currentContact.number].send(imageData);
-            
-            // ذخیره پیام در تاریخچه
-            saveMessage(currentContact.number, imageData);
-            
-            // نمایش پیام
-            displayMessage(imageData, 'outgoing');
-            
-            // بروزرسانی لیست مخاطبین
-            updateContactLastMessage(currentContact.number, '📷 عکس', 'image');
-            renderContactsList();
-            
-            showNotification('📷 عکس ارسال شد');
-        }
-        
-        function handleIncomingMessage(data, senderNumber) {
-            // ذخیره پیام در تاریخچه
-            saveMessage(senderNumber, data);
-            
-            // نمایش پیام اگر چت با این مخاطب باز است
-            if (currentContact && currentContact.number === senderNumber) {
-                displayMessage(data, 'incoming');
-            }
-            
-            // بروزرسانی لیست مخاطبین
-            if (data.type === 'image') {
-                updateContactLastMessage(senderNumber, '📷 عکس', 'image');
+        function handleIncomingData(data, senderNumber) {
+            if (data.type === 'file_chunk') {
+                handleFileChunk(data, senderNumber);
+            } else if (data.type === 'file_start') {
+                startReceivingFile(data, senderNumber);
+            } else if (data.type === 'file_end') {
+                completeReceivingFile(data, senderNumber);
             } else {
-                updateContactLastMessage(senderNumber, data.content, 'text');
-            }
-            
-            renderContactsList();
-            
-            // نمایش نوتیفیکیشن (اگر چت با این مخاطب باز نیست)
-            if (!currentContact || currentContact.number !== senderNumber) {
-                const contactName = contacts[senderNumber] ? contacts[senderNumber].name : senderNumber;
-                const messagePreview = data.type === 'image' ? '📷 عکس جدید' : data.content.substring(0, 30);
-                showNotification(`${contactName}: ${messagePreview}`);
+                // پیام معمولی
+                saveAndDisplayMessage(data, 'incoming');
+                updateContactLastMessage(senderNumber, data.content, data.type);
+                renderContactsList();
+                
+                // نوتیفیکیشن اگر در چت این مخاطب نیستیم
+                if (!currentContact || currentContact.number !== senderNumber) {
+                    const contactName = contacts[senderNumber] ? contacts[senderNumber].name : senderNumber;
+                    showNotification(`${contactName}: ${data.type === 'image' ? '📷 عکس' : data.content.substring(0, 20)}`);
+                }
             }
         }
         
-        function saveMessage(contactNumber, messageData) {
-            if (!contacts[contactNumber]) {
-                contacts[contactNumber] = {
-                    number: contactNumber,
-                    name: contactNumber,
-                    lastMessage: '',
-                    lastMessageTime: null,
-                    messages: [],
-                    isOnline: true
-                };
+        function saveAndDisplayMessage(messageData, direction, skipSave = false) {
+            if (!skipSave && currentContact) {
+                // ذخیره در تاریخچه
+                if (!currentContact.messages) currentContact.messages = [];
+                currentContact.messages.push(messageData);
+                saveContacts();
             }
             
-            // اضافه کردن پیام به تاریخچه
-            if (!contacts[contactNumber].messages) {
-                contacts[contactNumber].messages = [];
-            }
-            
-            contacts[contactNumber].messages.push(messageData);
-            
-            // محدود کردن تعداد پیام‌ها (آخرین 100 پیام)
-            if (contacts[contactNumber].messages.length > 100) {
-                contacts[contactNumber].messages = contacts[contactNumber].messages.slice(-100);
-            }
-            
-            saveContacts();
+            // نمایش در چت
+            displayMessage(messageData, direction);
         }
         
-        function updateContactLastMessage(contactNumber, message, type) {
-            if (contacts[contactNumber]) {
-                contacts[contactNumber].lastMessage = message;
-                contacts[contactNumber].lastMessageTime = Date.now();
-            }
-        }
-
-        // ==================== نمایش پیام‌ها ====================
-        function renderMessages() {
+        function loadChatMessages() {
             const container = document.getElementById('messagesContainer');
             container.innerHTML = '';
             
-            if (!currentContact || !contacts[currentContact.number] || !contacts[currentContact.number].messages) {
+            if (!currentContact || !currentContact.messages || currentContact.messages.length === 0) {
                 container.innerHTML = `
-                    <div class="message system">
-                        <p>👋 برای شروع گفتگو پیامی ارسال کنید.</p>
+                    <div class="system-message">
+                        <p>شروع گفتگو با ${currentContact.name}</p>
                     </div>
                 `;
                 return;
             }
             
-            const messages = contacts[currentContact.number].messages;
-            
-            if (messages.length === 0) {
-                container.innerHTML = `
-                    <div class="message system">
-                        <p>👋 برای شروع گفتگو پیامی ارسال کنید.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            messages.forEach(message => {
-                const direction = message.sender === myId ? 'outgoing' : 'incoming';
-                displayMessage(message, direction, false);
+            currentContact.messages.forEach(msg => {
+                const direction = msg.sender === myId ? 'outgoing' : 'incoming';
+                displayMessage(msg, direction, true);
             });
             
-            container.scrollTop = container.scrollHeight;
+            // اسکرول به پایین
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
         }
         
-        function displayMessage(messageData, direction, scroll = true) {
+        function displayMessage(messageData, direction, noAnimation = false) {
             const container = document.getElementById('messagesContainer');
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${direction}`;
+            if (noAnimation) {
+                messageDiv.style.animation = 'none';
+            }
             
             const time = new Date(messageData.timestamp).toLocaleTimeString('fa-IR', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
             });
             
+            let contentHtml = '';
+            
             if (messageData.type === 'image') {
-                // نمایش عکس از base64
-                messageDiv.innerHTML = `
-                    <span class="message-sender">${messageData.sender === myId ? 'شما' : messageData.sender}</span>
-                    <div class="message-image-container">
-                        <div class="image-badge">📷 عکس</div>
+                contentHtml = `
+                    <div class="message-content">
                         <img src="${messageData.content}" 
                              class="message-image" 
                              onclick="showImageInModal('${messageData.content}')"
-                             alt="عکس ارسالی">
+                             onload="this.style.opacity='1'"
+                             style="opacity:0;transition:opacity 0.3s">
+                        <div class="image-badge">📷 عکس</div>
                     </div>
-                    <small class="message-time">${time}</small>
                 `;
             } else {
-                // نمایش متن معمولی
-                messageDiv.innerHTML = `
-                    <span class="message-sender">${messageData.sender === myId ? 'شما' : messageData.sender}</span>
-                    <div>${escapeHtml(messageData.content)}</div>
-                    <small class="message-time">${time}</small>
+                contentHtml = `
+                    <div class="message-content">${escapeHtml(messageData.content)}</div>
                 `;
             }
+            
+            messageDiv.innerHTML = `
+                ${contentHtml}
+                <div class="message-time">
+                    ${time}
+                    ${direction === 'outgoing' ? '<span class="status-icon">✓</span>' : ''}
+                </div>
+            `;
             
             container.appendChild(messageDiv);
             
-            if (scroll) {
-                container.scrollTop = container.scrollHeight;
+            // اسکرول به پایین
+            if (!noAnimation) {
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 100);
+            }
+        }
+        
+        function updateContactLastMessage(contactNumber, message, type) {
+            if (contacts[contactNumber]) {
+                contacts[contactNumber].lastMessage = type === 'image' ? '📷 عکس' : message;
+                contacts[contactNumber].lastMessageTime = Date.now();
+                saveContacts();
             }
         }
 
-        // ==================== مدیریت عکس‌ها ====================
+        // ==================== سیستم ارسال عکس‌های سنگین ====================
+        function openImagePicker() {
+            document.getElementById('imageInput').click();
+        }
+        
         function handleImageSelect(file) {
             if (!file || !file.type.startsWith('image/')) {
                 showNotification('لطفاً یک فایل عکس انتخاب کنید');
                 return;
             }
             
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                showNotification('حجم عکس باید کمتر از ۵ مگابایت باشد');
+            // نمایش صفحه آپلود
+            showUploadOverlay('📷', 'در حال آماده‌سازی عکس...');
+            
+            // خواندن فایل
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                sendLargeImage(base64String, file.name);
+            };
+            reader.onerror = () => {
+                hideUploadOverlay();
+                showNotification('خطا در خواندن فایل');
+            };
+            reader.readAsDataURL(file);
+            
+            // پاک کردن input
+            document.getElementById('imageInput').value = '';
+        }
+        
+        function sendLargeImage(base64String, fileName) {
+            if (!currentContact || !connections[currentContact.number]) {
+                showNotification('اتصال با مخاطب برقرار نیست');
+                hideUploadOverlay();
                 return;
             }
             
-            const reader = new FileReader();
+            const fileId = generateFileId();
+            const chunks = splitBase64IntoChunks(base64String, CHUNK_SIZE);
+            const totalChunks = chunks.length;
             
-            reader.onload = function(e) {
-                // تبدیل عکس به base64
-                const base64String = e.target.result;
+            currentUpload = {
+                fileId,
+                fileName,
+                chunks,
+                totalChunks,
+                sentChunks: 0,
+                base64String
+            };
+            
+            // ارسال اطلاعات شروع فایل
+            connections[currentContact.number].send({
+                type: 'file_start',
+                fileId,
+                fileName,
+                totalChunks,
+                fileType: 'image',
+                sender: myId,
+                timestamp: Date.now()
+            });
+            
+            // شروع ارسال تکه‌ها
+            sendNextChunk();
+        }
+        
+        function splitBase64IntoChunks(base64String, chunkSize) {
+            const chunks = [];
+            const stringLength = base64String.length;
+            
+            for (let i = 0; i < stringLength; i += chunkSize) {
+                chunks.push(base64String.substring(i, i + chunkSize));
+            }
+            
+            return chunks;
+        }
+        
+        function sendNextChunk() {
+            if (!currentUpload) return;
+            
+            const { fileId, chunks, sentChunks, totalChunks } = currentUpload;
+            
+            if (sentChunks >= totalChunks) {
+                // تمام تکه‌ها ارسال شدند
+                connections[currentContact.number].send({
+                    type: 'file_end',
+                    fileId,
+                    sender: myId,
+                    timestamp: Date.now()
+                });
                 
-                // ارسال عکس به صورت متن
-                sendImageAsText(base64String);
+                // نمایش پیام عکس در چت محلی
+                const messageData = {
+                    type: 'image',
+                    content: currentUpload.base64String,
+                    sender: myId,
+                    timestamp: Date.now(),
+                    messageId: generateMessageId()
+                };
+                
+                saveAndDisplayMessage(messageData, 'outgoing');
+                updateContactLastMessage(currentContact.number, '📷 عکس', 'image');
+                renderContactsList();
+                
+                // پنهان کردن overlay
+                hideUploadOverlay();
+                currentUpload = null;
+                
+                showNotification('عکس ارسال شد');
+                return;
+            }
+            
+            // ارسال تکه فعلی
+            connections[currentContact.number].send({
+                type: 'file_chunk',
+                fileId,
+                chunkIndex: sentChunks,
+                chunkData: chunks[sentChunks],
+                sender: myId,
+                timestamp: Date.now()
+            });
+            
+            // بروزرسانی پیشرفت
+            currentUpload.sentChunks++;
+            const progress = Math.round((currentUpload.sentChunks / totalChunks) * 100);
+            updateUploadProgress(progress, `در حال ارسال... ${progress}%`);
+            
+            // ارسال تکه بعدی با کمی تأخیر
+            setTimeout(sendNextChunk, 50);
+        }
+        
+        function startReceivingFile(data, senderNumber) {
+            const { fileId, fileName, totalChunks, fileType } = data;
+            
+            receivingFiles[fileId] = {
+                fileName,
+                fileType,
+                totalChunks,
+                receivedChunks: 0,
+                chunks: new Array(totalChunks),
+                sender: senderNumber,
+                startTime: Date.now()
             };
             
-            reader.onerror = function() {
-                showNotification('خطا در خواندن فایل عکس');
+            showNotification(`دریافت ${fileType === 'image' ? 'عکس' : 'فایل'}: ${fileName}`);
+        }
+        
+        function handleFileChunk(data, senderNumber) {
+            const { fileId, chunkIndex, chunkData } = data;
+            
+            if (!receivingFiles[fileId]) return;
+            
+            const fileInfo = receivingFiles[fileId];
+            fileInfo.chunks[chunkIndex] = chunkData;
+            fileInfo.receivedChunks++;
+            
+            // بروزرسانی پیشرفت
+            const progress = Math.round((fileInfo.receivedChunks / fileInfo.totalChunks) * 100);
+            
+            // اگر در چت این مخاطب هستیم، نوار پیشرفت نشان بده
+            if (currentContact && currentContact.number === senderNumber) {
+                showProgressInChat(fileId, progress);
+            }
+            
+            // اگر تمام تکه‌ها دریافت شدند
+            if (fileInfo.receivedChunks === fileInfo.totalChunks) {
+                // 1 ثانیه صبر کن تا مطمئن شویم همه تکه‌ها آماده‌اند
+                setTimeout(() => completeReceivingFile({ fileId }, senderNumber), 1000);
+            }
+        }
+        
+        function completeReceivingFile(data, senderNumber) {
+            const { fileId } = data;
+            
+            if (!receivingFiles[fileId]) return;
+            
+            const fileInfo = receivingFiles[fileId];
+            
+            // سرهم کردن تکه‌ها
+            const base64String = fileInfo.chunks.join('');
+            
+            // حذف نوار پیشرفت
+            removeProgressFromChat(fileId);
+            
+            // ایجاد پیام
+            const messageData = {
+                type: fileInfo.fileType,
+                content: base64String,
+                sender: fileInfo.sender,
+                timestamp: Date.now(),
+                messageId: generateMessageId()
             };
             
-            reader.readAsDataURL(file);
+            // ذخیره و نمایش
+            if (currentContact && currentContact.number === senderNumber) {
+                saveAndDisplayMessage(messageData, 'incoming');
+                updateContactLastMessage(senderNumber, `📷 عکس`, 'image');
+            } else {
+                // ذخیره در تاریخچه مخاطب
+                if (contacts[senderNumber]) {
+                    if (!contacts[senderNumber].messages) contacts[senderNumber].messages = [];
+                    contacts[senderNumber].messages.push(messageData);
+                    saveContacts();
+                }
+            }
             
-            // پاک کردن مقدار input فایل
-            document.getElementById('imageInput').value = '';
+            // حذف از receivingFiles
+            delete receivingFiles[fileId];
+            
+            // بروزرسانی لیست مخاطبین
+            renderContactsList();
+            
+            // نوتیفیکیشن
+            if (!currentContact || currentContact.number !== senderNumber) {
+                const contactName = contacts[senderNumber] ? contacts[senderNumber].name : senderNumber;
+                showNotification(`${contactName}: 📷 عکس جدید`);
+            }
+        }
+        
+        function showProgressInChat(fileId, progress) {
+            const container = document.getElementById('messagesContainer');
+            
+            // اگر نوار پیشرفت از قبل وجود دارد، آن را بروزرسانی کن
+            let progressDiv = document.getElementById(`progress-${fileId}`);
+            
+            if (!progressDiv) {
+                progressDiv = document.createElement('div');
+                progressDiv.id = `progress-${fileId}`;
+                progressDiv.className = 'message incoming';
+                progressDiv.innerHTML = `
+                    <div class="message-content">
+                        <div style="font-size: 14px; margin-bottom: 8px;">📷 در حال دریافت عکس...</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 4px;">
+                            ${progress}%
+                        </div>
+                    </div>
+                `;
+                container.appendChild(progressDiv);
+            } else {
+                const progressBar = progressDiv.querySelector('.progress-bar');
+                const percentText = progressDiv.querySelector('div:last-child');
+                if (progressBar) progressBar.style.width = `${progress}%`;
+                if (percentText) percentText.textContent = `${progress}%`;
+            }
+            
+            // اسکرول به پایین
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        }
+        
+        function removeProgressFromChat(fileId) {
+            const progressDiv = document.getElementById(`progress-${fileId}`);
+            if (progressDiv) {
+                progressDiv.remove();
+            }
+        }
+
+        // ==================== UI Helper Functions ====================
+        function showUploadOverlay(icon, title) {
+            document.getElementById('uploadIcon').textContent = icon;
+            document.getElementById('uploadTitle').textContent = title;
+            document.getElementById('uploadOverlay').classList.add('active');
+        }
+        
+        function updateUploadProgress(percent, status) {
+            document.getElementById('uploadProgress').style.width = `${percent}%`;
+            document.getElementById('uploadStatus').textContent = status;
+        }
+        
+        function hideUploadOverlay() {
+            document.getElementById('uploadOverlay').classList.remove('active');
+            document.getElementById('uploadProgress').style.width = '0%';
+            document.getElementById('uploadStatus').textContent = '';
+        }
+        
+        function cancelUpload() {
+            currentUpload = null;
+            hideUploadOverlay();
+            showNotification('آپلود لغو شد');
         }
         
         function showImageInModal(base64String) {
@@ -1325,33 +1660,8 @@
             document.getElementById('imageModal').classList.add('active');
         }
         
-        function closeImageModal(event) {
-            if (event) {
-                event.stopPropagation();
-            }
+        function closeImageModal() {
             document.getElementById('imageModal').classList.remove('active');
-        }
-
-        // ==================== رابط کاربری ====================
-        function showChatPage() {
-            document.getElementById('setupPage').classList.add('hidden');
-            document.getElementById('chatPage').classList.add('active');
-            
-            // تنظیم وضعیت آنلاین
-            document.getElementById('statusDot').classList.remove('offline');
-            document.getElementById('myStatus').textContent = 'آنلاین';
-        }
-        
-        function handleKeyPress(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-            
-            // تنظیم ارتفاع خودکار textarea
-            const textarea = e.target;
-            textarea.style.height = '50px';
-            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
         }
         
         function showNotification(text) {
@@ -1363,57 +1673,86 @@
             setTimeout(() => notification.remove(), 3000);
         }
         
+        function showLoading(text) {
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.innerHTML = `
+                <div class="spinner"></div>
+                <p>${text}</p>
+            `;
+            document.body.appendChild(loading);
+            return loading;
+        }
+        
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+            
+            // فعال/غیرفعال کردن دکمه ارسال
+            document.getElementById('sendBtn').disabled = textarea.value.trim() === '' || 
+                !currentContact || 
+                !currentContact.isOnline;
+        }
+        
+        function generateMessageId() {
+            return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        function generateFileId() {
+            return 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // ==================== تنظیمات اولیه ====================
+        // ==================== Event Listeners ====================
         document.addEventListener('DOMContentLoaded', function() {
-            // تست WebRTC
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showNotification('مرورگر شما از WebRTC پشتیبانی نمی‌کند. لطفاً از Chrome, Firefox یا Edge استفاده کنید.');
-            }
+            // تنظیم ارتفاع textarea
+            const textarea = document.getElementById('messageInput');
+            textarea.addEventListener('input', function() {
+                autoResize(this);
+            });
+            
+            // ارسال با Enter (بدون Shift)
+            textarea.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // بستن مدال‌ها با کلیک خارج
+            document.getElementById('imageModal').addEventListener('click', function(e) {
+                if (e.target === this) closeImageModal();
+            });
+            
+            document.getElementById('newContactModal').addEventListener('click', function(e) {
+                if (e.target === this) closeNewContactModal();
+            });
+            
+            document.getElementById('uploadOverlay').addEventListener('click', function(e) {
+                if (e.target === this) cancelUpload();
+            });
+            
+            // بستن با Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                    closeNewContactModal();
+                    cancelUpload();
+                }
+            });
             
             // جلوگیری از اسکرول روی inputهای عددی
             document.querySelectorAll('input[type="number"]').forEach(input => {
                 input.addEventListener('wheel', e => e.preventDefault());
             });
             
-            // تنظیم ارتفاع خودکار textarea
-            const textarea = document.getElementById('textInput');
-            textarea.addEventListener('input', function() {
-                this.style.height = '50px';
-                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-            });
-            
-            // بستن مدال عکس با کلیک خارج
-            document.getElementById('imageModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeImageModal();
-                }
-            });
-            
-            // بستن مدال عکس با کلید Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeImageModal();
-                }
-            });
-            
-            // نمایش وضعیت اتصال
-            setInterval(() => {
-                if (peer && !peer.disconnected) {
-                    document.getElementById('statusDot').classList.remove('offline');
-                    document.getElementById('myStatus').textContent = 'آنلاین';
-                }
-            }, 5000);
-            
-            // بارگذاری PeerJS اگر قبلاً لود شده
-            if (typeof Peer !== 'undefined') {
-                console.log('PeerJS already loaded');
-            }
+            // تنظیم focus روی لاگین
+            document.getElementById('myIdInput').focus();
         });
     </script>
 </body>

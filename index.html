@@ -1,715 +1,1746 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>P2P WebRTC Chat (Single HTML)</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      direction: rtl;
-      background: #0f172a;
-      color: #e5e7eb;
-      height: 100vh;
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-    }
-    .app {
-      width: 100%;
-      max-width: 1200px;
-      margin: 12px;
-      background: #020617;
-      border-radius: 16px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #1f2937;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-    .app-header {
-      padding: 10px 16px;
-      border-bottom: 1px solid #1f2937;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(90deg, #0f172a, #111827);
-    }
-    .app-header-title {
-      font-size: 16px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .badge {
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: #1d4ed8;
-      color: #e5e7eb;
-    }
-    .status {
-      font-size: 12px;
-      color: #9ca3af;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>چت مستقیم P2P</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
 
-    .app-body {
-      flex: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.8fr);
-      min-height: 0;
-    }
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-surface: #334155;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: #475569;
+        }
 
-    /* Left: chat */
-    .chat-panel {
-      border-left: 1px solid #1f2937;
-      display: flex;
-      flex-direction: column;
-      background: radial-gradient(circle at top left, #0b1120, #020617);
-    }
-    .chat-header {
-      padding: 8px 12px;
-      border-bottom: 1px solid #1f2937;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 12px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .msg-row {
-      display: flex;
-      margin-bottom: 4px;
-    }
-    .msg-row.me {
-      justify-content: flex-start;
-    }
-    .msg-row.peer {
-      justify-content: flex-end;
-    }
-    .msg-bubble {
-      max-width: 70%;
-      padding: 6px 10px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.4;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-    .msg-row.me .msg-bubble {
-      background: #1d4ed8;
-      color: #e5e7eb;
-      border-bottom-left-radius: 2px;
-    }
-    .msg-row.peer .msg-bubble {
-      background: #111827;
-      color: #e5e7eb;
-      border-bottom-right-radius: 2px;
-    }
-    .msg-meta {
-      font-size: 10px;
-      color: #9ca3af;
-      margin-top: 2px;
-      text-align: left;
-    }
-    .msg-row.peer .msg-meta {
-      text-align: right;
-    }
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    .chat-input-area {
-      border-top: 1px solid #1f2937;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: #020617;
-    }
-    .chat-input-row {
-      display: flex;
-      gap: 6px;
-    }
-    .input {
-      flex: 1;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 13px;
-      outline: none;
-    }
-    .input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.4);
-    }
-    .btn {
-      padding: 6px 10px;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
-      background: #111827;
-      color: #e5e7eb;
-      font-size: 12px;
-      cursor: pointer;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-    .btn.primary {
-      background: #1d4ed8;
-      border-color: #1d4ed8;
-    }
-    .btn.danger {
-      background: #b91c1c;
-      border-color: #b91c1c;
-    }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    .file-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-    .file-row input[type="file"] {
-      font-size: 11px;
-      max-width: 180px;
-    }
-    .file-progress {
-      font-size: 11px;
-      color: #9ca3af;
-    }
+        /* صفحه راه‌اندازی */
+        #setupPage {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            transition: transform 0.5s ease;
+        }
 
-    /* Right: signaling + media */
-    .right-panel {
-      display: flex;
-      flex-direction: column;
-      background: radial-gradient(circle at top right, #020617, #020617);
-    }
-    .section {
-      padding: 8px 10px;
-      border-bottom: 1px solid #1f2937;
-    }
-    .section-title {
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .section-sub {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-bottom: 4px;
-    }
-    .section-body {
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    textarea {
-      width: 100%;
-      min-height: 70px;
-      resize: vertical;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 11px;
-      padding: 6px;
-      direction: ltr;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-    textarea:focus {
-      border-color: #2563eb;
-      outline: none;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.4);
-    }
+        #setupPage.hidden {
+            transform: translateY(-100%);
+        }
 
-    .media-panel {
-      flex: 1;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      min-height: 0;
-    }
-    .media-controls {
-      padding: 8px 10px;
-      border-bottom: 1px solid #1f2937;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-    .media-videos {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      padding: 8px;
-    }
-    .video-box {
-      background: #020617;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-    .video-label {
-      padding: 4px 6px;
-      border-bottom: 1px solid #1f2937;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      max-height: 180px;
-      background: #000;
-      object-fit: cover;
-    }
+        .setup-card {
+            background: var(--bg-surface);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
 
-    @media (max-width: 900px) {
-      .app-body {
-        grid-template-columns: 1fr;
-      }
-      .chat-panel {
-        border-left: none;
-        border-top: 1px solid #1f2937;
-      }
-    }
-  </style>
+        .setup-logo {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .number-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            text-align: center;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+
+        .number-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-success), #059669);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-danger), #dc2626);
+            color: white;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* صفحه چت */
+        #chatPage {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        #chatPage.active {
+            display: flex;
+        }
+
+        /* هدر چت */
+        .chat-header {
+            background: var(--bg-surface);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* پیام‌ها */
+        #messagesContainer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg-primary);
+        }
+
+        .message {
+            max-width: 80%;
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .message.selected-for-reply {
+            border: 2px solid var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.outgoing {
+            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.incoming {
+            color: var(--text-primary);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.system {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            margin: 10px auto;
+            text-align: center;
+            max-width: 90%;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            cursor: default;
+        }
+
+        .message.system:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .message-sender {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-bottom: 4px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            display: block;
+            text-align: left;
+        }
+
+        /* تصاویر دریافتی */
+        .message-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            margin-top: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+            display: block;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* ریپلای شده */
+        .reply-preview {
+            background: rgba(255, 255, 255, 0.1);
+            border-right: 3px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .reply-sender {
+            font-size: 0.7rem;
+            color: var(--accent-primary);
+            margin-bottom: 2px;
+        }
+
+        /* کنترل‌های پایین */
+        .chat-controls {
+            background: var(--bg-surface);
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+            color: white;
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        /* ناحیه‌های ورودی */
+        .input-area {
+            display: none;
+        }
+
+        .input-area.active {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .text-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #textInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        #textInput:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .reply-indicator {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 3px solid var(--accent-primary);
+        }
+
+        .reply-indicator-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .cancel-reply-btn {
+            background: none;
+            border: none;
+            color: var(--accent-danger);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* حالت ویدیو */
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .video-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .video-box {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            border: 3px solid var(--accent-primary);
+        }
+
+        .video-box.local {
+            border-color: var(--accent-primary);
+        }
+
+        .video-box.remote {
+            border-color: var(--accent-secondary);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+            transform: scaleX(-1);
+        }
+
+        .video-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            z-index: 2;
+        }
+
+        .call-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-primary), #7c3aed);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* حالت آپلود فایل */
+        .upload-area {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed var(--border-color);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* نوتیفیکیشن */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+
+        /* پیشرفت آپلود */
+        .progress-container {
+            width: 100%;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-  <div class="app-header">
-    <div class="app-header-title">
-      <span>چت P2P WebRTC (بدون سرور)</span>
-      <span class="badge">Single HTML</span>
+    <!-- صفحه راه‌اندازی -->
+    <div id="setupPage">
+        <div class="setup-card">
+            <div class="setup-logo">💬</div>
+            <h1 style="text-align: center; margin-bottom: 30px; color: var(--text-primary);">چت مستقیم P2P</h1>
+            
+            <div class="input-group">
+                <label class="input-label">شماره تماس مجازی من:</label>
+                <input type="number" class="number-input" id="myIdInput" 
+                       placeholder="مثلاً: 123456789" maxlength="9">
+            </div>
+            
+            <button class="btn btn-primary" onclick="initializePeer()" id="initBtn">
+                <span>✅</span>
+                <span>تایید شماره من</span>
+            </button>
+            
+            <div class="input-group" style="margin-top: 30px;">
+                <label class="input-label">شماره تماس مجازی مخاطب:</label>
+                <input type="number" class="number-input" id="peerIdInput" 
+                       placeholder="شماره مخاطب را وارد کنید">
+            </div>
+            
+            <button class="btn btn-success" onclick="connectToPeer()" id="connectBtn" disabled>
+                <span>📞</span>
+                <span>اتصال به مخاطب</span>
+            </button>
+        </div>
     </div>
-    <div class="status" id="status">آماده</div>
-  </div>
 
-  <div class="app-body">
-    <!-- Chat panel -->
-    <div class="chat-panel">
-      <div class="chat-header">
-        <span>چت و فایل روی DataChannel</span>
-        <span id="dcState">کانال داده: بسته</span>
-      </div>
-      <div class="chat-messages" id="messages"></div>
-      <div class="chat-input-area">
-        <div class="chat-input-row">
-          <input id="msgInput" class="input" placeholder="پیام..." />
-          <button id="btnSendMsg" class="btn primary">ارسال</button>
+    <!-- صفحه چت -->
+    <div id="chatPage">
+        <!-- هدر -->
+        <div class="chat-header">
+            <div class="connection-status">
+                <div class="status-dot"></div>
+                <span>متصل به: <span id="peerName">---</span></span>
+            </div>
+            <button class="btn btn-danger" onclick="disconnect()" style="padding: 10px 20px; font-size: 0.9rem;">
+                قطع ارتباط
+            </button>
         </div>
-        <div class="file-row">
-          <input type="file" id="fileInput" />
-          <button id="btnSendFile" class="btn">ارسال فایل</button>
-          <span class="file-progress" id="fileProgress"></span>
+
+        <!-- پیام‌ها -->
+        <div id="messagesContainer">
+            <div class="message system">
+                <p>👋 خوش آمدید! برای شروع گفتگو، به مخاطب خود متصل شوید.</p>
+            </div>
         </div>
-      </div>
+
+        <!-- کنترل‌ها -->
+        <div class="chat-controls">
+            <!-- نمایش ریپلای -->
+            <div id="replyIndicator" class="reply-indicator" style="display: none;">
+                <div class="reply-indicator-text">
+                    <span style="color: var(--accent-primary);">پاسخ به:</span>
+                    <span id="replyPreviewText"></span>
+                </div>
+                <button class="cancel-reply-btn" onclick="cancelReply()">✕</button>
+            </div>
+
+            <!-- انتخاب حالت -->
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('text')" title="متن">
+                    <span>💬</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('audio')" title="تماس صوتی">
+                    <span>🎙️</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('video')" title="تماس ویدیویی">
+                    <span>📹</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('image')" title="ارسال عکس">
+                    <span>🖼️</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('file')" title="ارسال فایل">
+                    <span>📎</span>
+                </button>
+            </div>
+
+            <!-- حالت متن -->
+            <div class="input-area active" id="textArea">
+                <div class="text-input-container">
+                    <input type="text" id="textInput" placeholder="پیام خود را بنویسید..." onkeypress="handleKeyPress(event)">
+                    <button class="control-btn" onclick="sendMessage()" id="sendBtn" disabled>
+                        <span>📤</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- حالت تماس صوتی -->
+            <div class="input-area" id="audioArea">
+                <div style="text-align: center; padding: 20px;">
+                    <button class="btn btn-success" onclick="startAudioCall()" id="audioCallBtn" style="width: auto; padding: 15px 30px;">
+                        <span>🎙️</span>
+                        <span>شروع تماس صوتی</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="endCall()" id="endAudioBtn" style="display: none; width: auto; padding: 15px 30px;">
+                        <span>📴</span>
+                        <span>پایان تماس</span>
+                    </button>
+                    <div id="audioStatus" style="margin-top: 15px; color: var(--text-secondary);"></div>
+                </div>
+            </div>
+
+            <!-- حالت تماس ویدیویی -->
+            <div class="input-area" id="videoArea">
+                <div class="video-container">
+                    <div class="video-box local">
+                        <div class="video-label">📹 شما</div>
+                        <video id="localVideo" autoplay muted playsinline></video>
+                    </div>
+                    <div class="video-box remote">
+                        <div class="video-label">👤 مخاطب</div>
+                        <video id="remoteVideo" autoplay playsinline></video>
+                    </div>
+                </div>
+                
+                <div class="call-controls">
+                    <button class="control-btn" onclick="startVideoCall()" id="videoCallBtn">
+                        <span>📹</span>
+                    </button>
+                    <button class="control-btn" onclick="toggleAudio()" id="audioToggleBtn">
+                        <span>🎤</span>
+                    </button>
+                    <button class="control-btn" onclick="toggleVideo()" id="videoToggleBtn">
+                        <span>📷</span>
+                    </button>
+                    <button class="control-btn" style="background: linear-gradient(135deg, var(--accent-danger), #dc2626);" 
+                            onclick="endCall()" id="endVideoBtn" style="display: none;">
+                        <span>📴</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- حالت ارسال عکس -->
+            <div class="input-area" id="imageArea">
+                <div style="text-align: center;">
+                    <div class="upload-area" onclick="document.getElementById('imageInput').click()">
+                        <span style="font-size: 3rem;">🖼️</span>
+                        <p style="margin: 10px 0;">برای انتخاب عکس کلیک کنید</p>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">حداکثر سایز: 5MB</p>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" 
+                           onchange="handleImageSelect(this.files[0])">
+                    
+                    <div id="imagePreview" style="margin: 15px 0;"></div>
+                    <div class="progress-container" id="imageProgress" style="display: none;">
+                        <div class="progress-bar" id="imageProgressBar"></div>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="sendImage()" id="sendImageBtn" disabled style="width: auto; padding: 15px 30px;">
+                        <span>📤</span>
+                        <span>ارسال عکس</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- حالت ارسال فایل -->
+            <div class="input-area" id="fileArea">
+                <div style="text-align: center;">
+                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                        <span style="font-size: 3rem;">📎</span>
+                        <p style="margin: 10px 0;">برای انتخاب فایل کلیک کنید</p>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">حداکثر سایز: 10MB</p>
+                    </div>
+                    <input type="file" id="fileInput" style="display: none;" 
+                           onchange="handleFileSelect(this.files[0])">
+                    
+                    <div id="filePreview" style="margin: 15px 0;"></div>
+                    <div class="progress-container" id="fileProgress" style="display: none;">
+                        <div class="progress-bar" id="fileProgressBar"></div>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="sendFile()" id="sendFileBtn" disabled style="width: auto; padding: 15px 30px;">
+                        <span>📤</span>
+                        <span>ارسال فایل</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Right panel: signaling + media -->
-    <div class="right-panel">
-      <div class="section">
-        <div class="section-title">
-          <span>سیگنالینگ دستی (بدون سرور)</span>
-        </div>
-        <div class="section-sub">
-          یکی از شما «ایجاد Offer» را می‌زند، JSON را کپی می‌کند و برای طرف مقابل می‌فرستد.
-          طرف مقابل آن را در «Remote SDP» می‌گذارد، Answer می‌سازد و JSON را برمی‌گرداند.
-        </div>
-        <div class="section-body">
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button id="btnCreateOffer" class="btn primary">۱) ایجاد Offer (Caller)</button>
-            <button id="btnCreateAnswer" class="btn">۲) ساخت Answer از Remote</button>
-            <button id="btnSetRemote" class="btn">۳) Set Remote SDP</button>
-          </div>
-          <label style="font-size:11px;">Local SDP (این را کپی و برای طرف مقابل بفرست):</label>
-          <textarea id="localSdp" readonly></textarea>
-          <label style="font-size:11px;">Remote SDP (از طرف مقابل بگیر و اینجا پیست کن):</label>
-          <textarea id="remoteSdp"></textarea>
-        </div>
-      </div>
+    <script>
+        // ==================== متغیرهای اصلی ====================
+        let peer = null;
+        let dataConnection = null;
+        let mediaConnection = null;
+        let peerConnection = null;
+        let dataChannel = null;
+        let localStream = null;
+        let remoteStream = null;
+        let myId = null;
+        let peerId = null;
+        let currentMode = 'text';
+        let isInCall = false;
+        let selectedImage = null;
+        let selectedFile = null;
+        
+        // متغیرهای جدید برای سیستم ریپلای
+        let replyingTo = null; // ذخیره اطلاعات پیام ریپلای شده
+        let messageColors = {}; // ذخیره رنگ‌ها برای هر شماره
 
-      <div class="media-panel">
-        <div class="media-controls">
-          <button id="btnCallAudio" class="btn">تماس صوتی</button>
-          <button id="btnCallVideo" class="btn">تماس تصویری</button>
-          <button id="btnHangup" class="btn danger">قطع تماس</button>
-          <span id="mediaStatus">بدون تماس</span>
-        </div>
-        <div class="media-videos">
-          <div class="video-box">
-            <div class="video-label">Local</div>
-            <video id="localVideo" autoplay playsinline muted></video>
-          </div>
-          <div class="video-box">
-            <div class="video-label">Remote</div>
-            <video id="remoteVideo" autoplay playsinline></video>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  // --- WebRTC config ---
-  const iceServers = [
-    { urls: 'stun:stun.l.google.com:19302' },
-  ];
-  const CHUNK_SIZE = 16 * 1024;
-
-  let pc = null;
-  let dataChannel = null;
-  let localStream = null;
-  let remoteStream = null;
-  let isCaller = false;
-
-  // File receive state
-  let incomingFileInfo = null;
-  let incomingFileBuffer = [];
-  let incomingFileReceivedSize = 0;
-
-  // UI elements
-  const statusEl = document.getElementById('status');
-  const dcStateEl = document.getElementById('dcState');
-  const messagesEl = document.getElementById('messages');
-  const msgInput = document.getElementById('msgInput');
-  const btnSendMsg = document.getElementById('btnSendMsg');
-  const fileInput = document.getElementById('fileInput');
-  const btnSendFile = document.getElementById('btnSendFile');
-  const fileProgress = document.getElementById('fileProgress');
-
-  const btnCreateOffer = document.getElementById('btnCreateOffer');
-  const btnCreateAnswer = document.getElementById('btnCreateAnswer');
-  const btnSetRemote = document.getElementById('btnSetRemote');
-  const localSdpEl = document.getElementById('localSdp');
-  const remoteSdpEl = document.getElementById('remoteSdp');
-
-  const btnCallAudio = document.getElementById('btnCallAudio');
-  const btnCallVideo = document.getElementById('btnCallVideo');
-  const btnHangup = document.getElementById('btnHangup');
-  const mediaStatus = document.getElementById('mediaStatus');
-  const localVideo = document.getElementById('localVideo');
-  const remoteVideo = document.getElementById('remoteVideo');
-
-  function setStatus(msg) {
-    console.log('[STATUS]', msg);
-    statusEl.textContent = msg;
-  }
-
-  function setDcState(msg) {
-    dcStateEl.textContent = 'کانال داده: ' + msg;
-  }
-
-  function addMessage(text, fromMe, meta = '') {
-    const row = document.createElement('div');
-    row.className = 'msg-row ' + (fromMe ? 'me' : 'peer');
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    bubble.textContent = text;
-    row.appendChild(bubble);
-    if (meta) {
-      const m = document.createElement('div');
-      m.className = 'msg-meta';
-      m.textContent = meta;
-      row.appendChild(m);
-    }
-    messagesEl.appendChild(row);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  function createPeerConnection() {
-    if (pc) {
-      pc.close();
-      pc = null;
-    }
-    pc = new RTCPeerConnection({ iceServers });
-
-    pc.oniceconnectionstatechange = () => {
-      console.log('ICE state:', pc.iceConnectionState);
-    };
-    pc.onconnectionstatechange = () => {
-      console.log('PC state:', pc.connectionState);
-      if (pc.connectionState === 'connected') {
-        setStatus('P2P متصل شد');
-      }
-    };
-
-    pc.onicegatheringstatechange = () => {
-      console.log('ICE gathering:', pc.iceGatheringState);
-      if (pc.iceGatheringState === 'complete') {
-        if (pc.localDescription) {
-          localSdpEl.value = JSON.stringify(pc.localDescription);
+        // ==================== تابع تولید رنگ بر اساس شماره ====================
+        function getColorForNumber(number) {
+            if (!messageColors[number]) {
+                // تولید رنگ یکتا بر اساس هش شماره
+                let hash = 0;
+                for (let i = 0; i < number.length; i++) {
+                    hash = number.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                
+                // تولید رنگ‌های روشن برای متن تیره
+                const hue = hash % 360;
+                const saturation = 70 + (hash % 30); // 70-100%
+                const lightness = 40 + (hash % 20); // 40-60%
+                
+                messageColors[number] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            }
+            return messageColors[number];
         }
-      }
-    };
 
-    pc.ondatachannel = (event) => {
-      console.log('DataChannel received');
-      setupDataChannel(event.channel);
-    };
-
-    remoteStream = new MediaStream();
-    remoteVideo.srcObject = remoteStream;
-    pc.ontrack = (event) => {
-      console.log('Remote track:', event.streams);
-      event.streams[0].getTracks().forEach((t) => remoteStream.addTrack(t));
-    };
-  }
-
-  function createDataChannel() {
-    const channel = pc.createDataChannel('chat-file');
-    setupDataChannel(channel);
-  }
-
-  function setupDataChannel(channel) {
-    dataChannel = channel;
-    dataChannel.onopen = () => {
-      console.log('DataChannel open');
-      setDcState('باز');
-      addMessage('کانال داده باز شد', false, '');
-    };
-    dataChannel.onclose = () => {
-      console.log('DataChannel closed');
-      setDcState('بسته');
-      addMessage('کانال داده بسته شد', false, '');
-    };
-    dataChannel.onerror = (e) => {
-      console.error('DataChannel error:', e);
-      setStatus('خطا در DataChannel');
-    };
-    dataChannel.onmessage = (event) => {
-      handleDataChannelMessage(event.data);
-    };
-  }
-
-  function handleDataChannelMessage(data) {
-    if (typeof data === 'string') {
-      try {
-        const msg = JSON.parse(data);
-        if (msg.kind === 'text') {
-          addMessage(msg.text, false, new Date(msg.ts).toLocaleTimeString());
-        } else if (msg.kind === 'file-info') {
-          incomingFileInfo = msg;
-          incomingFileBuffer = [];
-          incomingFileReceivedSize = 0;
-          fileProgress.textContent = `در حال دریافت: ${msg.name} (${msg.size} bytes)`;
-        } else if (msg.kind === 'file-complete') {
-          const blob = new Blob(incomingFileBuffer);
-          const url = URL.createObjectURL(blob);
-          const row = document.createElement('div');
-          row.className = 'msg-row peer';
-          const bubble = document.createElement('div');
-          bubble.className = 'msg-bubble';
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = incomingFileInfo.name;
-          link.textContent = `دریافت فایل: ${incomingFileInfo.name}`;
-          link.style.color = '#93c5fd';
-          bubble.appendChild(link);
-          row.appendChild(bubble);
-          messagesEl.appendChild(row);
-          messagesEl.scrollTop = messagesEl.scrollHeight;
-
-          fileProgress.textContent = 'دریافت فایل کامل شد';
-          incomingFileInfo = null;
-          incomingFileBuffer = [];
-          incomingFileReceivedSize = 0;
+        // ==================== راه‌اندازی PeerJS ====================
+        function initializePeer() {
+            const myIdInput = document.getElementById('myIdInput').value.trim();
+            
+            if (!myIdInput || myIdInput.length < 3) {
+                showNotification('لطفاً یک شماره معتبر (حداقل ۳ رقم) وارد کنید.');
+                return;
+            }
+            
+            myId = myIdInput.padStart(9, '0').slice(-9);
+            
+            // بارگذاری PeerJS
+            if (typeof Peer === 'undefined') {
+                loadPeerJS();
+                return;
+            }
+            
+            createPeer();
         }
-      } catch (e) {
-        console.error('Error parsing message:', e);
-      }
-    } else if (data instanceof ArrayBuffer) {
-      incomingFileBuffer.push(data);
-      incomingFileReceivedSize += data.byteLength;
-      if (incomingFileInfo) {
-        fileProgress.textContent = `دریافت: ${incomingFileReceivedSize}/${incomingFileInfo.size}`;
-      }
-    }
-  }
+        
+        function loadPeerJS() {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js';
+            script.onload = createPeer;
+            script.onerror = () => showNotification('خطا در بارگذاری کتابخانه PeerJS');
+            document.head.appendChild(script);
+        }
+        
+        function createPeer() {
+            peer = new Peer(myId, {
+                host: '0.peerjs.com',
+                port: 443,
+                path: '/',
+                debug: 3
+            });
+            
+            peer.on('open', (id) => {
+                console.log('Peer created with ID:', id);
+                document.getElementById('initBtn').disabled = true;
+                document.getElementById('myIdInput').disabled = true;
+                document.getElementById('connectBtn').disabled = false;
+                showNotification('✅ شماره شما ثبت شد!');
+            });
+            
+            peer.on('connection', (conn) => {
+                handleDataConnection(conn);
+            });
+            
+            peer.on('call', (call) => {
+                handleIncomingCall(call);
+            });
+            
+            peer.on('error', (err) => {
+                console.error('PeerJS Error:', err);
+                showNotification(`خطا: ${err.type}`);
+                
+                if (err.type === 'unavailable-id') {
+                    document.getElementById('initBtn').disabled = false;
+                    document.getElementById('myIdInput').disabled = false;
+                }
+            });
+            
+            peer.on('disconnected', () => {
+                showNotification('⚠️ اتصال به سرور قطع شد');
+            });
+        }
 
-  async function createOffer() {
-    isCaller = true;
-    createPeerConnection();
-    createDataChannel();
-    try {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      setStatus('در حال جمع‌آوری ICE برای Offer...');
-    } catch (e) {
-      console.error('Error creating offer:', e);
-      setStatus('خطا در ایجاد Offer');
-    }
-  }
+        // ==================== اتصال به مخاطب ====================
+        function connectToPeer() {
+            const peerIdInput = document.getElementById('peerIdInput').value.trim();
+            
+            if (!peerIdInput || !peer) {
+                showNotification('لطفاً ابتدا شماره خود را تنظیم کنید.');
+                return;
+            }
+            
+            if (peerIdInput === myId) {
+                showNotification('نمی‌توانید به خودتان متصل شوید!');
+                return;
+            }
+            
+            peerId = peerIdInput.padStart(9, '0').slice(-9);
+            
+            // اتصال داده
+            dataConnection = peer.connect(peerId);
+            handleDataConnection(dataConnection);
+            
+            showNotification(`در حال اتصال به ${peerId}...`);
+        }
+        
+        function handleDataConnection(conn) {
+            dataConnection = conn;
+            
+            conn.on('open', () => {
+                console.log('Data connection opened');
+                peerId = conn.peer;
+                document.getElementById('peerName').textContent = peerId;
+                document.getElementById('sendBtn').disabled = false;
+                
+                showNotification('✅ اتصال برقرار شد!');
+                showChatPage();
+                
+                // راه‌اندازی WebRTC برای فایل‌ها
+                setupWebRTC();
+                
+                conn.send({
+                    type: 'handshake',
+                    id: myId,
+                    timestamp: Date.now()
+                });
+            });
+            
+            conn.on('data', (data) => {
+                handleIncomingData(data);
+            });
+            
+            conn.on('close', () => {
+                showNotification('🔴 اتصال قطع شد');
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('peerName').textContent = '---';
+                endCall();
+            });
+            
+            conn.on('error', (err) => {
+                console.error('Data connection error:', err);
+            });
+        }
 
-  async function createAnswerFromRemote() {
-    if (!pc) createPeerConnection();
-    try {
-      const remote = JSON.parse(remoteSdpEl.value.trim());
-      await pc.setRemoteDescription(new RTCSessionDescription(remote));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      setStatus('در حال جمع‌آوری ICE برای Answer...');
-    } catch (e) {
-      console.error('Error creating answer:', e);
-      setStatus('خطا در ساخت Answer (Remote SDP را چک کن)');
-    }
-  }
+        // ==================== راه‌اندازی WebRTC برای فایل‌ها ====================
+        function setupWebRTC() {
+            const configuration = {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+            };
+            
+            peerConnection = new RTCPeerConnection(configuration);
+            
+            // ایجاد کانال داده
+            dataChannel = peerConnection.createDataChannel('fileTransfer', {
+                ordered: true,
+                maxPacketLifeTime: 3000,
+                maxRetransmits: 5
+            });
+            
+            setupDataChannel();
+            
+            peerConnection.ondatachannel = (event) => {
+                console.log('Data channel received');
+                dataChannel = event.channel;
+                setupDataChannel();
+            };
+            
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate && dataConnection && dataConnection.open) {
+                    dataConnection.send({
+                        type: 'ice-candidate',
+                        candidate: event.candidate
+                    });
+                }
+            };
+            
+            // گوش دادن به کاندیدای ICE
+            dataConnection.on('data', (data) => {
+                if (data.type === 'ice-candidate' && peerConnection) {
+                    peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
+                        .catch(e => console.error('Error adding ICE candidate:', e));
+                }
+            });
+        }
+        
+        function setupDataChannel() {
+            dataChannel.onopen = () => {
+                console.log('Data channel opened');
+                showNotification('کانال انتقال فایل آماده است');
+            };
+            
+            dataChannel.onmessage = (event) => {
+                handleFileTransfer(event.data);
+            };
+            
+            dataChannel.onerror = (error) => {
+                console.error('Data channel error:', error);
+                showNotification('خطا در کانال انتقال');
+            };
+            
+            dataChannel.onclose = () => {
+                console.log('Data channel closed');
+            };
+        }
 
-  async function setRemoteFromText() {
-    if (!pc) {
-      setStatus('ابتدا Offer/Answer بساز');
-      return;
-    }
-    try {
-      const remote = JSON.parse(remoteSdpEl.value.trim());
-      await pc.setRemoteDescription(new RTCSessionDescription(remote));
-      setStatus('Remote SDP تنظیم شد');
-    } catch (e) {
-      console.error('Error setting remote:', e);
-      setStatus('خطا در Set Remote (JSON را چک کن)');
-    }
-  }
+        // ==================== ارسال پیام متنی ====================
+        function sendMessage() {
+            const input = document.getElementById('textInput');
+            const message = input.value.trim();
+            
+            if (!message || !dataConnection || !dataConnection.open) return;
+            
+            const messageData = {
+                type: 'message',
+                content: message,
+                timestamp: Date.now(),
+                sender: myId,
+                replyTo: replyingTo // اضافه کردن اطلاعات ریپلای
+            };
+            
+            dataConnection.send(messageData);
+            displayMessage(message, 'outgoing', myId, replyingTo);
+            input.value = '';
+            input.focus();
+            
+            // ریست کردن ریپلای
+            cancelReply();
+        }
 
-  function sendTextMessage() {
-    const text = msgInput.value.trim();
-    if (!text || !dataChannel || dataChannel.readyState !== 'open') return;
-    const payload = {
-      kind: 'text',
-      text,
-      ts: Date.now(),
-    };
-    dataChannel.send(JSON.stringify(payload));
-    addMessage(text, true, new Date(payload.ts).toLocaleTimeString());
-    msgInput.value = '';
-  }
+        // ==================== مدیریت ریپلای ====================
+        function setReply(messageId, messageContent, messageSender) {
+            // حذف هایلایت از پیام قبلی
+            document.querySelectorAll('.message.selected-for-reply').forEach(msg => {
+                msg.classList.remove('selected-for-reply');
+            });
+            
+            // هایلایت کردن پیام جدید
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.classList.add('selected-for-reply');
+            }
+            
+            // ذخیره اطلاعات ریپلای
+            replyingTo = {
+                id: messageId,
+                content: messageContent.substring(0, 50) + (messageContent.length > 50 ? '...' : ''),
+                sender: messageSender
+            };
+            
+            // نمایش ریپلای
+            document.getElementById('replyIndicator').style.display = 'flex';
+            document.getElementById('replyPreviewText').textContent = replyingTo.content;
+            
+            showNotification(`در حال پاسخ به پیام ${messageSender}`);
+            document.getElementById('textInput').focus();
+        }
+        
+        function cancelReply() {
+            replyingTo = null;
+            document.getElementById('replyIndicator').style.display = 'none';
+            
+            // حذف هایلایت
+            document.querySelectorAll('.message.selected-for-reply').forEach(msg => {
+                msg.classList.remove('selected-for-reply');
+            });
+        }
+        
+        function handleMessageClick(messageId, messageContent, messageSender) {
+            if (messageSender !== myId) { // فقط می‌توان به پیام‌های دریافتی ریپلای کرد
+                setReply(messageId, messageContent, messageSender);
+            }
+        }
 
-  function sendFile() {
-    if (!dataChannel || dataChannel.readyState !== 'open') {
-      alert('کانال داده باز نیست');
-      return;
-    }
-    const file = fileInput.files[0];
-    if (!file) {
-      alert('فایلی انتخاب نشده');
-      return;
-    }
+        // ==================== ارسال فایل‌ها ====================
+        async function sendImage() {
+            if (!selectedImage) {
+                showNotification('لطفاً ابتدا یک عکس انتخاب کنید');
+                return;
+            }
+            
+            // بررسی وضعیت کانال انتقال
+            if (!dataChannel || dataChannel.readyState !== 'open') {
+                showNotification('کانال انتقال آماده نیست. لطفاً چند لحظه صبر کنید...');
+                return;
+            }
+            
+            try {
+                document.getElementById('imageProgress').style.display = 'block';
+                document.getElementById('sendImageBtn').disabled = true;
+                
+                const fileData = {
+                    type: 'image',
+                    name: selectedImage.name,
+                    size: selectedImage.size,
+                    mimeType: selectedImage.type,
+                    sender: myId,
+                    replyTo: replyingTo
+                };
+                
+                // خواندن فایل به صورت ArrayBuffer
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    
+                    // ارسال اطلاعات فایل
+                    dataChannel.send(JSON.stringify(fileData));
+                    
+                    // ارسال داده‌های باینری
+                    dataChannel.send(arrayBuffer);
+                    
+                    // نمایش پیام ارسال
+                    displayMessage(`عکس "${selectedImage.name}" ارسال شد`, 'outgoing', myId, replyingTo);
+                    
+                    // بازنشانی
+                    document.getElementById('imagePreview').innerHTML = '';
+                    document.getElementById('imageProgress').style.display = 'none';
+                    document.getElementById('sendImageBtn').disabled = true;
+                    selectedImage = null;
+                    
+                    // ریست کردن ریپلای
+                    cancelReply();
+                    
+                    showNotification('✅ عکس ارسال شد');
+                };
+                
+                reader.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const percentComplete = (event.loaded / event.total) * 100;
+                        document.getElementById('imageProgressBar').style.width = percentComplete + '%';
+                    }
+                };
+                
+                reader.readAsArrayBuffer(selectedImage);
+                
+            } catch (error) {
+                console.error('Error sending image:', error);
+                showNotification('خطا در ارسال عکس');
+                document.getElementById('sendImageBtn').disabled = false;
+            }
+        }
+        
+        async function sendFile() {
+            if (!selectedFile) {
+                showNotification('لطفاً ابتدا یک فایل انتخاب کنید');
+                return;
+            }
+            
+            // بررسی وضعیت کانال انتقال
+            if (!dataChannel || dataChannel.readyState !== 'open') {
+                showNotification('کانال انتقال آماده نیست. لطفاً چند لحظه صبر کنید...');
+                return;
+            }
+            
+            try {
+                document.getElementById('fileProgress').style.display = 'block';
+                document.getElementById('sendFileBtn').disabled = true;
+                
+                const fileData = {
+                    type: 'file',
+                    name: selectedFile.name,
+                    size: selectedFile.size,
+                    mimeType: selectedFile.type,
+                    sender: myId,
+                    replyTo: replyingTo
+                };
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    
+                    dataChannel.send(JSON.stringify(fileData));
+                    dataChannel.send(arrayBuffer);
+                    
+                    displayMessage(`فایل "${selectedFile.name}" ارسال شد`, 'outgoing', myId, replyingTo);
+                    
+                    document.getElementById('filePreview').innerHTML = '';
+                    document.getElementById('fileProgress').style.display = 'none';
+                    document.getElementById('sendFileBtn').disabled = true;
+                    selectedFile = null;
+                    
+                    // ریست کردن ریپلای
+                    cancelReply();
+                    
+                    showNotification('✅ فایل ارسال شد');
+                };
+                
+                reader.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const percentComplete = (event.loaded / event.total) * 100;
+                        document.getElementById('fileProgressBar').style.width = percentComplete + '%';
+                    }
+                };
+                
+                reader.readAsArrayBuffer(selectedFile);
+                
+            } catch (error) {
+                console.error('Error sending file:', error);
+                showNotification('خطا در ارسال فایل');
+                document.getElementById('sendFileBtn').disabled = false;
+            }
+        }
 
-    const info = {
-      kind: 'file-info',
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    };
-    dataChannel.send(JSON.stringify(info));
+        // ==================== مدیریت تماس‌های صوتی/تصویری ====================
+        async function startAudioCall() {
+            if (!dataConnection || !dataConnection.open) {
+                showNotification('ابتدا باید به مخاطب متصل شوید.');
+                return;
+            }
+            
+            if (isInCall) {
+                endCall();
+                return;
+            }
+            
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    },
+                    video: false
+                });
+                
+                const call = peer.call(peerId, localStream, {
+                    metadata: { type: 'audio' }
+                });
+                
+                mediaConnection = call;
+                setupMediaCall(call, 'audio');
+                
+                document.getElementById('audioCallBtn').style.display = 'none';
+                document.getElementById('endAudioBtn').style.display = 'block';
+                document.getElementById('audioStatus').textContent = 'در حال تماس صوتی...';
+                
+                showNotification('📞 تماس صوتی شروع شد');
+                
+            } catch (error) {
+                console.error('Error starting audio call:', error);
+                handleMediaError(error, 'میکروفن');
+            }
+        }
+        
+        async function startVideoCall() {
+            if (!dataConnection || !dataConnection.open) {
+                showNotification('ابتدا باید به مخاطب متصل شوید.');
+                return;
+            }
+            
+            if (isInCall) {
+                endCall();
+                return;
+            }
+            
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    }
+                });
+                
+                document.getElementById('localVideo').srcObject = localStream;
+                
+                const call = peer.call(peerId, localStream, {
+                    metadata: { type: 'video' }
+                });
+                
+                mediaConnection = call;
+                setupMediaCall(call, 'video');
+                
+                document.getElementById('videoCallBtn').style.display = 'none';
+                document.getElementById('endVideoBtn').style.display = 'flex';
+                
+                showNotification('📹 تماس ویدیویی شروع شد');
+                setMode('video');
+                
+            } catch (error) {
+                console.error('Error starting video call:', error);
+                handleMediaError(error, 'دوربین');
+            }
+        }
+        
+        async function handleIncomingCall(call) {
+            try {
+                const metadata = call.metadata || {};
+                
+                if (metadata.type === 'video') {
+                    try {
+                        localStream = await navigator.mediaDevices.getUserMedia({
+                            audio: true,
+                            video: true
+                        });
+                        document.getElementById('localVideo').srcObject = localStream;
+                    } catch (error) {
+                        localStream = await navigator.mediaDevices.getUserMedia({
+                            audio: true,
+                            video: false
+                        });
+                        showNotification('⚠️ فقط تماس صوتی ممکن است');
+                    }
+                } else {
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: false
+                    });
+                }
+                
+                call.answer(localStream);
+                mediaConnection = call;
+                
+                call.on('stream', (stream) => {
+                    if (metadata.type === 'video') {
+                        remoteStream = stream;
+                        document.getElementById('remoteVideo').srcObject = remoteStream;
+                        setMode('video');
+                        showNotification('📹 تماس ویدیویی دریافت شد');
+                    } else {
+                        // برای تماس صوتی
+                        const audio = new Audio();
+                        audio.srcObject = stream;
+                        audio.play();
+                        setMode('audio');
+                        showNotification('📞 تماس صوتی دریافت شد');
+                    }
+                    
+                    isInCall = true;
+                    
+                    if (metadata.type === 'video') {
+                        document.getElementById('videoCallBtn').style.display = 'none';
+                        document.getElementById('endVideoBtn').style.display = 'flex';
+                    } else {
+                        document.getElementById('audioCallBtn').style.display = 'none';
+                        document.getElementById('endAudioBtn').style.display = 'block';
+                        document.getElementById('audioStatus').textContent = 'در حال تماس صوتی...';
+                    }
+                });
+                
+                call.on('close', () => {
+                    endCall();
+                });
+                
+            } catch (error) {
+                console.error('Error answering call:', error);
+                call.close();
+            }
+        }
+        
+        function setupMediaCall(call, type) {
+            isInCall = true;
+            
+            call.on('stream', (stream) => {
+                if (type === 'video') {
+                    remoteStream = stream;
+                    document.getElementById('remoteVideo').srcObject = remoteStream;
+                } else {
+                    const audio = new Audio();
+                    audio.srcObject = stream;
+                    audio.play();
+                }
+            });
+            
+            call.on('close', () => {
+                endCall();
+            });
+            
+            call.on('error', (error) => {
+                console.error('Call error:', error);
+                endCall();
+            });
+        }
+        
+        function endCall() {
+            if (mediaConnection) {
+                mediaConnection.close();
+                mediaConnection = null;
+            }
+            
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream = null;
+            }
+            
+            isInCall = false;
+            
+            // بازنشانی UI
+            document.getElementById('audioCallBtn').style.display = 'block';
+            document.getElementById('endAudioBtn').style.display = 'none';
+            document.getElementById('videoCallBtn').style.display = 'flex';
+            document.getElementById('endVideoBtn').style.display = 'none';
+            document.getElementById('audioStatus').textContent = '';
+            
+            // پاک کردن ویدیوها
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            
+            setMode('text');
+            showNotification('📴 تماس پایان یافت');
+        }
+        
+        function toggleAudio() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    const btn = document.getElementById('audioToggleBtn');
+                    btn.innerHTML = audioTrack.enabled ? '<span>🎤</span>' : '<span>🔇</span>';
+                    btn.style.background = audioTrack.enabled ? 
+                        'linear-gradient(135deg, var(--accent-primary), #7c3aed)' :
+                        'linear-gradient(135deg, var(--accent-danger), #dc2626)';
+                }
+            }
+        }
+        
+        function toggleVideo() {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    const btn = document.getElementById('videoToggleBtn');
+                    btn.innerHTML = videoTrack.enabled ? '<span>📷</span>' : '<span>📵</span>';
+                    btn.style.background = videoTrack.enabled ? 
+                        'linear-gradient(135deg, var(--accent-primary), #7c3aed)' :
+                        'linear-gradient(135deg, var(--accent-danger), #dc2626)';
+                }
+            }
+        }
 
-    const reader = new FileReader();
-    let offset = 0;
+        // ==================== مدیریت داده‌های دریافتی ====================
+        function handleIncomingData(data) {
+            switch (data.type) {
+                case 'handshake':
+                    displayMessage(`${data.id} متصل شد`, 'system');
+                    break;
+                    
+                case 'message':
+                    displayMessage(data.content, 'incoming', data.sender, data.replyTo);
+                    break;
+            }
+        }
+        
+        function handleFileTransfer(data) {
+            try {
+                if (typeof data === 'string') {
+                    const fileInfo = JSON.parse(data);
+                    window.receivingFile = fileInfo;
+                    window.receivedChunks = [];
+                    
+                    if (fileInfo.type === 'image') {
+                        showNotification(`دریافت عکس: ${fileInfo.name}`);
+                    } else {
+                        showNotification(`دریافت فایل: ${fileInfo.name}`);
+                    }
+                } else if (data instanceof ArrayBuffer) {
+                    if (window.receivingFile) {
+                        const blob = new Blob([data], { type: window.receivingFile.mimeType });
+                        const url = URL.createObjectURL(blob);
+                        
+                        if (window.receivingFile.type === 'image') {
+                            displayImageMessage(window.receivingFile.name, url, window.receivingFile.sender, window.receivingFile.replyTo);
+                        } else {
+                            displayFileMessage(window.receivingFile.name, url, window.receivingFile.size, window.receivingFile.sender, window.receivingFile.replyTo);
+                        }
+                        
+                        window.receivingFile = null;
+                        window.receivedChunks = [];
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling file transfer:', error);
+                showNotification('خطا در دریافت فایل');
+            }
+        }
 
-    reader.onerror = (err) => {
-      console.error('FileReader error:', err);
-      fileProgress.textContent = 'خطا در خواندن فایل';
-    };
+        // ==================== نمایش پیام‌ها ====================
+        function displayMessage(text, type, sender = null, replyTo = null) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            
+            if (type === 'system') {
+                messageDiv.className = 'message system';
+                messageDiv.innerHTML = `<p>${text}</p>`;
+            } else {
+                const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const displaySender = sender || (type === 'outgoing' ? myId : peerId);
+                const time = new Date().toLocaleTimeString('fa-IR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.className = `message ${type}`;
+                messageDiv.setAttribute('data-message-id', messageId);
+                
+                // تنظیم رنگ بر اساس شماره فرستنده
+                if (type === 'incoming') {
+                    const bgColor = getColorForNumber(displaySender);
+                    messageDiv.style.backgroundColor = bgColor;
+                }
+                
+                let replyHtml = '';
+                if (replyTo) {
+                    replyHtml = `
+                        <div class="reply-preview" onclick="setReply('${replyTo.id || 'temp'}', '${replyTo.content}', '${replyTo.sender}')">
+                            <div class="reply-sender">پاسخ به ${replyTo.sender}:</div>
+                            <div>${replyTo.content}</div>
+                        </div>
+                    `;
+                }
+                
+                messageDiv.innerHTML = `
+                    <span class="message-sender">${displaySender}</span>
+                    ${replyHtml}
+                    <div>${text}</div>
+                    <small class="message-time">${time}</small>
+                `;
+                
+                // اضافه کردن کلیک برای ریپلای (فقط برای پیام‌های دریافتی)
+                if (type === 'incoming') {
+                    messageDiv.onclick = () => handleMessageClick(messageId, text, displaySender);
+                }
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function displayImageMessage(name, url, sender, replyTo = null) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            
+            const messageId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const time = new Date().toLocaleTimeString('fa-IR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.className = 'message incoming';
+            messageDiv.setAttribute('data-message-id', messageId);
+            
+            // تنظیم رنگ بر اساس شماره فرستنده
+            const bgColor = getColorForNumber(sender);
+            messageDiv.style.backgroundColor = bgColor;
+            
+            let replyHtml = '';
+            if (replyTo) {
+                replyHtml = `
+                    <div class="reply-preview" onclick="setReply('${replyTo.id || 'temp'}', '${replyTo.content}', '${replyTo.sender}')">
+                        <div class="reply-sender">پاسخ به ${replyTo.sender}:</div>
+                        <div>${replyTo.content}</div>
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = `
+                <span class="message-sender">${sender}</span>
+                ${replyHtml}
+                <div>📷 عکس دریافت شد</div>
+                <img src="${url}" class="message-image" onclick="openImage('${url}')">
+                <div style="font-size: 0.9rem; margin-top: 5px; color: rgba(255,255,255,0.9);">
+                    ${name}
+                </div>
+                <small class="message-time">${time}</small>
+            `;
+            
+            // اضافه کردن کلیک برای ریپلای
+            messageDiv.onclick = () => handleMessageClick(messageId, `عکس: ${name}`, sender);
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function displayFileMessage(name, url, size, sender, replyTo = null) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            
+            const messageId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const time = new Date().toLocaleTimeString('fa-IR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.className = 'message incoming';
+            messageDiv.setAttribute('data-message-id', messageId);
+            
+            // تنظیم رنگ بر اساس شماره فرستنده
+            const bgColor = getColorForNumber(sender);
+            messageDiv.style.backgroundColor = bgColor;
+            
+            let replyHtml = '';
+            if (replyTo) {
+                replyHtml = `
+                    <div class="reply-preview" onclick="setReply('${replyTo.id || 'temp'}', '${replyTo.content}', '${replyTo.sender}')">
+                        <div class="reply-sender">پاسخ به ${replyTo.sender}:</div>
+                        <div>${replyTo.content}</div>
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = `
+                <span class="message-sender">${sender}</span>
+                ${replyHtml}
+                <div>📎 فایل دریافت شد</div>
+                <div style="margin-top: 10px;">
+                    <a href="${url}" download="${name}" style="color: white; text-decoration: underline;">
+                        ${name} (${formatBytes(size)})
+                    </a>
+                </div>
+                <small class="message-time">${time}</small>
+            `;
+            
+            // اضافه کردن کلیک برای ریپلای
+            messageDiv.onclick = () => handleMessageClick(messageId, `فایل: ${name}`, sender);
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function openImage(url) {
+            window.open(url, '_blank');
+        }
+        
+        function handleImageSelect(file) {
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('اندازه فایل باید کمتر از 5MB باشد');
+                return;
+            }
+            
+            selectedImage = file;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').innerHTML = `
+                    <img src="${e.target.result}" style="max-width: 300px; border-radius: 10px; margin-bottom: 10px;">
+                    <p>${file.name} (${formatBytes(file.size)})</p>
+                `;
+                document.getElementById('sendImageBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function handleFileSelect(file) {
+            if (!file) return;
+            
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('اندازه فایل باید کمتر از 10MB باشد');
+                return;
+            }
+            
+            selectedFile = file;
+            
+            document.getElementById('filePreview').innerHTML = `
+                <div style="font-size: 3rem;">📄</div>
+                <p style="margin: 10px 0; font-weight: 500;">${file.name}</p>
+                <p style="color: var(--text-secondary);">${formatBytes(file.size)}</p>
+            `;
+            document.getElementById('sendFileBtn').disabled = false;
+        }
 
-    reader.onload = (e) => {
-      const buffer = e.target.result;
-      dataChannel.send(buffer);
-      offset += buffer.byteLength;
-      fileProgress.textContent = `ارسال: ${offset}/${file.size}`;
+        // ==================== رابط کاربری ====================
+        function setMode(mode) {
+            if (isInCall && (mode !== 'audio' && mode !== 'video' && currentMode !== 'audio' && currentMode !== 'video')) {
+                showNotification('⚠️ در حال تماس هستید');
+                return;
+            }
+            
+            currentMode = mode;
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.mode-btn')[getModeIndex(mode)].classList.add('active');
+            
+            document.querySelectorAll('.input-area').forEach(area => area.classList.remove('active'));
+            document.getElementById(`${mode}Area`).classList.add('active');
+            
+            if (mode === 'text') {
+                setTimeout(() => document.getElementById('textInput').focus(), 100);
+            }
+        }
+        
+        function getModeIndex(mode) {
+            const modes = ['text', 'audio', 'video', 'image', 'file'];
+            return modes.indexOf(mode);
+        }
+        
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function showChatPage() {
+            document.getElementById('setupPage').classList.add('hidden');
+            document.getElementById('chatPage').classList.add('active');
+            document.getElementById('textInput').focus();
+        }
+        
+        function showSetupPage() {
+            document.getElementById('setupPage').classList.remove('hidden');
+            document.getElementById('chatPage').classList.remove('active');
+            disconnect();
+        }
+        
+        function disconnect() {
+            if (dataConnection) dataConnection.close();
+            if (mediaConnection) mediaConnection.close();
+            if (peerConnection) peerConnection.close();
+            if (peer) peer.destroy();
+            
+            dataConnection = null;
+            mediaConnection = null;
+            peerConnection = null;
+            peer = null;
+            localStream = null;
+            remoteStream = null;
+            myId = null;
+            peerId = null;
+            isInCall = false;
+            selectedImage = null;
+            selectedFile = null;
+            replyingTo = null;
+            messageColors = {};
+            
+            document.getElementById('myIdInput').value = '';
+            document.getElementById('peerIdInput').value = '';
+            document.getElementById('myIdInput').disabled = false;
+            document.getElementById('initBtn').disabled = false;
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('replyIndicator').style.display = 'none';
+            
+            document.getElementById('messagesContainer').innerHTML = `
+                <div class="message system">
+                    <p>👋 خوش آمدید! برای شروع گفتگو، به مخاطب خود متصل شوید.</p>
+                </div>
+            `;
+            
+            showSetupPage();
+        }
 
-      if (offset < file.size) {
-        readSlice(offset);
-      } else {
-        dataChannel.send(JSON.stringify({ kind: 'file-complete' }));
-        fileProgress.textContent = 'ارسال فایل کامل شد';
-        addMessage(`فایل ارسال شد: ${file.name}`, true);
-      }
-    };
+        // ==================== توابع کمکی ====================
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = text;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 بایت';
+            const k = 1024;
+            const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+        }
+        
+        function handleMediaError(error, device) {
+            console.error(`${device} error:`, error);
+            
+            if (error.name === 'NotAllowedError') {
+                showNotification(`دسترسی به ${device} رد شد. لطفاً مجوز را در تنظیمات مرورگر بررسی کنید.`);
+            } else if (error.name === 'NotFoundError') {
+                showNotification(`${device} پیدا نشد.`);
+            } else if (error.name === 'NotReadableError') {
+                showNotification(`${device} قابل دسترسی نیست.`);
+            } else {
+                showNotification(`خطا در دسترسی به ${device}`);
+            }
+        }
 
-    function readSlice(o) {
-      const slice = file.slice(o, o + CHUNK_SIZE);
-      reader.readAsArrayBuffer(slice);
-    }
-
-    readSlice(0);
-  }
-
-  async function startCall(withVideo) {
-    if (!pc) {
-      alert('ابتدا Offer/Answer را رد و بدل کنید');
-      return;
-    }
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: withVideo,
-      });
-      localVideo.srcObject = localStream;
-      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-      mediaStatus.textContent = withVideo ? 'تماس تصویری فعال' : 'تماس صوتی فعال';
-    } catch (e) {
-      console.error('Error getUserMedia:', e);
-      alert('خطا در دسترسی به میکروفن/دوربین: ' + e.message);
-    }
-  }
-
-  function hangup() {
-    if (localStream) {
-      localStream.getTracks().forEach((t) => t.stop());
-      localStream = null;
-      localVideo.srcObject = null;
-    }
-    if (remoteStream) {
-      remoteStream.getTracks().forEach((t) => t.stop());
-      remoteStream = null;
-      remoteVideo.srcObject = null;
-    }
-    if (pc) {
-      pc.getSenders().forEach((s) => pc.removeTrack(s));
-    }
-    mediaStatus.textContent = 'بدون تماس';
-    setStatus('تماس قطع شد (فقط media متوقف شد، P2P برقرار است)');
-  }
-
-  // Event bindings
-  btnCreateOffer.onclick = createOffer;
-  btnCreateAnswer.onclick = createAnswerFromRemote;
-  btnSetRemote.onclick = setRemoteFromText;
-  btnSendMsg.onclick = sendTextMessage;
-  msgInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendTextMessage();
-    }
-  });
-  btnSendFile.onclick = sendFile;
-  btnCallAudio.onclick = () => startCall(false);
-  btnCallVideo.onclick = () => startCall(true);
-  btnHangup.onclick = hangup;
-
-  setStatus('آماده - یکی Offer بسازد، دیگری Answer');
-  setDcState('بسته');
-</script>
+        // ==================== تنظیمات اولیه ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // تست WebRTC
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('مرورگر شما از WebRTC پشتیبانی نمی‌کند. لطفاً از Chrome, Firefox یا Edge استفاده کنید.');
+            }
+            
+            // ارسال با Enter
+            document.getElementById('textInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            // جلوگیری از اسکرول روی inputهای عددی
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('wheel', e => e.preventDefault());
+            });
+            
+            // تنظیم ارتفاع در موبایل
+            function setAppHeight() {
+                document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+            }
+            setAppHeight();
+            window.addEventListener('resize', setAppHeight);
+        });
+    </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>پیام‌رسان P2P</title>
+    <title>گپ آرانا</title>
     <style>
         * {
             margin: 0;
@@ -14,21 +14,24 @@
         }
 
         :root {
-            --bg-primary: #0a1017;
-            --bg-secondary: #111b21;
-            --bg-surface: #202c33;
+            --bg-primary: #0e1621;
+            --bg-secondary: #17212b;
+            --bg-surface: #1e2c3a;
             --bg-input: #2a3942;
-            --accent-primary: #00a884;
-            --accent-secondary: #53bdeb;
-            --text-primary: #e9edef;
-            --text-secondary: #8696a0;
-            --text-muted: #667781;
-            --border-color: #3a4a53;
-            --message-incoming: #202c33;
-            --message-outgoing: #005c4b;
-            --status-online: #00a884;
-            --status-offline: #667781;
+            --accent-primary: #2b5278;
+            --accent-secondary: #4d5b9c;
+            --accent-green: #00af9c;
+            --text-primary: #e1e9f0;
+            --text-secondary: #7c8b96;
+            --text-muted: #5d6c79;
+            --border-color: #2a3942;
+            --message-incoming: #182533;
+            --message-outgoing: #2b5278;
+            --status-online: #00af9c;
+            --status-offline: #7c8b96;
             --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            --header-height: 60px;
+            --input-height: 80px;
         }
 
         body {
@@ -66,14 +69,16 @@
         /* هدر */
         .header {
             background: var(--bg-secondary);
-            padding: 12px 16px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
             gap: 15px;
             box-shadow: var(--shadow);
-            z-index: 100;
+            z-index: 1000;
             position: relative;
-            min-height: 60px;
+            height: var(--header-height);
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .header-title {
@@ -87,7 +92,7 @@
 
         .header-actions {
             display: flex;
-            gap: 20px;
+            gap: 15px;
         }
 
         .icon-btn {
@@ -102,6 +107,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 40px;
+            height: 40px;
         }
 
         .icon-btn:hover {
@@ -110,14 +117,15 @@
 
         .back-btn {
             font-size: 22px;
+            color: var(--accent-green);
         }
 
         /* آواتار */
         .avatar {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -128,8 +136,8 @@
         }
 
         .avatar.small {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             font-size: 16px;
         }
 
@@ -137,17 +145,18 @@
         #loginPage {
             justify-content: center;
             padding: 20px;
-            background: linear-gradient(135deg, var(--bg-primary), #1a242c);
+            background: linear-gradient(135deg, var(--bg-primary), #131e29);
         }
 
         .login-container {
             background: var(--bg-secondary);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 40px 30px;
             text-align: center;
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
             animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0 20px;
         }
 
         @keyframes slideUp {
@@ -162,17 +171,11 @@
         }
 
         .app-icon {
-            font-size: 70px;
+            font-size: 60px;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #00a884, #53bdeb);
+            background: linear-gradient(135deg, var(--accent-green), #53bdeb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
         }
 
         .input-group {
@@ -189,12 +192,12 @@
 
         .number-input {
             width: 100%;
-            padding: 18px;
+            padding: 16px;
             border: 2px solid var(--border-color);
-            border-radius: 14px;
+            border-radius: 12px;
             background: var(--bg-input);
             color: var(--text-primary);
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
             font-family: monospace;
             transition: all 0.3s;
@@ -203,16 +206,16 @@
 
         .number-input:focus {
             outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.2);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(0, 175, 156, 0.2);
         }
 
         .btn {
             width: 100%;
-            padding: 18px;
+            padding: 16px;
             border: none;
-            border-radius: 14px;
-            font-size: 17px;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -223,14 +226,14 @@
         }
 
         .btn-primary {
-            background: var(--accent-primary);
+            background: var(--accent-green);
             color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: #008f70;
+            background: #009982;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 168, 132, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 175, 156, 0.3);
         }
 
         .btn:disabled {
@@ -244,23 +247,24 @@
             padding: 12px 16px;
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .search-input {
             width: 100%;
-            padding: 14px 20px;
+            padding: 14px 16px;
             border: none;
             border-radius: 10px;
             background: var(--bg-input);
             color: var(--text-primary);
-            font-size: 16px;
+            font-size: 15px;
             text-align: right;
             transition: all 0.3s;
         }
 
         .search-input:focus {
             outline: none;
-            box-shadow: 0 0 0 2px var(--accent-primary);
+            box-shadow: 0 0 0 2px var(--accent-green);
         }
 
         .search-input::placeholder {
@@ -282,7 +286,7 @@
             border-bottom: 1px solid var(--border-color);
             cursor: pointer;
             transition: background 0.2s;
-            min-height: 72px;
+            min-height: 70px;
         }
 
         .contact-item:active {
@@ -330,7 +334,7 @@
             background: var(--status-offline);
         }
 
-        /* صفحه چت - ساختار جدید */
+        /* صفحه چت - طراحی شبیه تلگرام */
         .chat-container {
             flex: 1;
             display: flex;
@@ -349,6 +353,7 @@
             flex-direction: column;
             gap: 8px;
             -webkit-overflow-scrolling: touch;
+            min-height: 0;
         }
 
         /* پیام‌ها */
@@ -379,10 +384,11 @@
 
         .message {
             padding: 10px 14px;
-            border-radius: 18px;
+            border-radius: 12px;
             position: relative;
             word-wrap: break-word;
             max-width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .message.incoming {
@@ -396,7 +402,7 @@
         }
 
         .message-content {
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.4;
             word-break: break-word;
         }
@@ -422,91 +428,112 @@
         }
 
         .status-icon {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .status-icon.sent {
-            color: #90caf9;
+            color: #8eb5f1;
         }
 
         .status-icon.delivered {
-            color: #4fc3f7;
+            color: #8eb5f1;
         }
 
         .status-icon.read {
-            color: var(--accent-primary);
+            color: var(--accent-green);
         }
 
         .message-sender {
             font-size: 12px;
-            color: var(--accent-primary);
+            color: var(--accent-green);
             margin-bottom: 4px;
             font-weight: 500;
         }
 
-        /* پیام سیستم */
-        .system-message {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 13px;
-            padding: 10px 16px;
-            margin: 8px auto;
+        /* ریپلای */
+        .reply-preview {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            max-width: 90%;
-        }
-
-        /* عکس در پیام */
-        .message-image-container {
-            position: relative;
-            margin: 4px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            max-width: 280px;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .message-image {
-            width: 100%;
-            height: auto;
-            max-height: 300px;
-            object-fit: cover;
-            display: block;
+            border-right: 3px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
             cursor: pointer;
-            transition: transform 0.3s;
-            opacity: 0;
-            animation: fadeIn 0.5s forwards;
+            transition: background 0.2s;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .reply-preview:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .message-image.loaded {
-            opacity: 1;
-        }
-
-        .message-image:active {
-            transform: scale(0.98);
-        }
-
-        .image-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 15px;
+        .reply-sender {
             font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            backdrop-filter: blur(10px);
+            color: var(--accent-green);
+            margin-bottom: 2px;
+            font-weight: 500;
         }
 
-        /* نوار ورودی پیام - کاملاً بازنویسی شده */
+        .reply-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* نوار ریپلای */
+        .reply-indicator {
+            background: var(--bg-secondary);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .reply-indicator-content {
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .reply-indicator-sender {
+            font-size: 13px;
+            color: var(--accent-green);
+            margin-bottom: 2px;
+        }
+
+        .reply-indicator-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cancel-reply {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        /* نوار ورودی پیام - کاملاً شبیه تلگرام */
         .input-area {
             background: var(--bg-secondary);
             padding: 12px 16px;
@@ -517,22 +544,25 @@
             align-items: flex-end;
             gap: 12px;
             transition: all 0.3s;
+            flex-shrink: 0;
+            margin-top: auto;
         }
 
         .input-wrapper {
             flex: 1;
             background: var(--bg-input);
-            border-radius: 24px;
-            padding: 10px 18px;
+            border-radius: 20px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             gap: 10px;
-            min-height: 46px;
+            min-height: 44px;
             transition: all 0.3s;
+            border: 1px solid transparent;
         }
 
         .input-wrapper:focus-within {
-            box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.2);
+            border-color: var(--accent-green);
         }
 
         #messageInput {
@@ -540,10 +570,10 @@
             border: none;
             background: transparent;
             color: var(--text-primary);
-            font-size: 16px;
+            font-size: 15px;
             resize: none;
-            max-height: 120px;
-            min-height: 26px;
+            max-height: 100px;
+            min-height: 24px;
             padding: 0;
             font-family: inherit;
             line-height: 1.4;
@@ -558,7 +588,7 @@
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 22px;
+            font-size: 20px;
             cursor: pointer;
             padding: 10px;
             border-radius: 50%;
@@ -578,10 +608,10 @@
         }
 
         .action-btn.send {
-            background: var(--accent-primary);
+            background: var(--accent-green);
             color: white;
-            width: 46px;
-            height: 46px;
+            width: 44px;
+            height: 44px;
         }
 
         .action-btn.send:disabled {
@@ -592,86 +622,8 @@
         }
 
         .action-btn.send:not(:disabled):hover {
-            background: #008f70;
+            background: #009982;
             transform: scale(1.05);
-        }
-
-        /* مدال‌ها */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s;
-            padding: 20px;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border-radius: 20px;
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .modal-title {
-            font-size: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* نوتیفیکیشن */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--accent-primary);
-            color: white;
-            padding: 14px 22px;
-            border-radius: 12px;
-            font-weight: 500;
-            z-index: 2000;
-            animation: slideIn 0.3s, fadeOut 0.3s 2.7s;
-            box-shadow: var(--shadow);
-            max-width: 300px;
-            backdrop-filter: blur(10px);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%) translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0) translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeOut {
-            to { opacity: 0; }
         }
 
         /* اسکرول بار */
@@ -701,6 +653,77 @@
             border-radius: 3px;
         }
 
+        /* مدال‌ها */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            animation: fadeIn 0.3s;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* نوتیفیکیشن */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            z-index: 2000;
+            animation: slideIn 0.3s, fadeOut 0.3s 2.7s;
+            box-shadow: var(--shadow);
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+
         /* لودینگ */
         .loading-overlay {
             position: fixed;
@@ -712,7 +735,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 3000;
+            z-index: 4000;
         }
 
         .loading-overlay.active {
@@ -720,11 +743,11 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: var(--accent-primary);
+            border-top-color: var(--accent-green);
             animation: spin 1s linear infinite;
         }
 
@@ -732,47 +755,20 @@
             to { transform: rotate(360deg); }
         }
 
-        /* نوار پیشرفت */
-        .progress-message {
-            background: var(--message-incoming);
-            padding: 12px 16px;
-            border-radius: 18px;
-            margin: 8px;
-            max-width: 85%;
-            align-self: flex-start;
-        }
-
-        .progress-container {
-            width: 200px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 3px;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
         /* مخاطب جدید */
         .new-contact-btn {
             position: fixed;
             bottom: 24px;
             left: 24px;
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: var(--accent-primary);
+            background: var(--accent-green);
             color: white;
             border: none;
-            font-size: 26px;
+            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0, 168, 132, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 175, 156, 0.4);
             transition: all 0.3s;
             z-index: 100;
             display: flex;
@@ -791,65 +787,21 @@
             }
         }
 
-        /* انیمیشن‌های اضافی */
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
-
-        .bounce-in {
-            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* حالت تایپ کردن */
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 12px 16px;
-            background: var(--message-incoming);
-            border-radius: 18px;
-            max-width: 85%;
-            align-self: flex-start;
-            margin-bottom: 8px;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-secondary);
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-8px); }
-        }
-
         /* استایل برای موبایل */
         @media (max-width: 480px) {
             .message-wrapper {
                 max-width: 90%;
             }
             
-            .message-image-container {
-                max-width: 240px;
-            }
-            
             .header {
-                padding: 12px;
+                padding: 0 12px;
             }
             
             .input-area {
+                padding: 12px;
+            }
+            
+            .search-bar {
                 padding: 12px;
             }
         }
@@ -857,13 +809,14 @@
         /* برای دسکتاپ */
         @media (min-width: 768px) {
             body {
-                max-width: 500px;
+                max-width: 450px;
                 margin: 0 auto;
                 box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
                 height: 90vh;
                 top: 5vh;
-                border-radius: 24px;
+                border-radius: 20px;
                 overflow: hidden;
+                border: 1px solid var(--border-color);
             }
             
             .new-contact-btn {
@@ -878,19 +831,19 @@
     <div id="loginPage" class="page active">
         <div class="login-container">
             <div class="app-icon">💬</div>
-            <h1 style="margin-bottom: 30px; font-size: 26px;">پیام‌رسان P2P</h1>
+            <h1 style="margin-bottom: 30px; font-size: 24px;">گپ آرانا</h1>
             
             <div class="input-group">
-                <label class="input-label">شماره خود را وارد کنید</label>
+                <label class="input-label">شماره 11 رقمی خود را وارد کنید</label>
                 <input type="number" class="number-input" id="myIdInput" 
-                       placeholder="مثلاً: 123456" maxlength="9" inputmode="numeric" autofocus>
+                       placeholder="مثلاً: 09123456789" maxlength="11" inputmode="numeric" autofocus>
                 <small style="display: block; margin-top: 12px; color: var(--text-muted); font-size: 13px;">
                     این شماره شناسه منحصر به فرد شما خواهد بود
                 </small>
             </div>
             
             <button class="btn btn-primary" onclick="initializePeer()" id="loginBtn">
-                <span>ورود و شروع</span>
+                <span>ورود به گپ آرانا</span>
                 <span>→</span>
             </button>
         </div>
@@ -930,6 +883,15 @@
             </div>
         </div>
 
+        <!-- نوار ریپلای -->
+        <div class="reply-indicator" id="replyIndicator">
+            <div class="reply-indicator-content">
+                <div class="reply-indicator-sender" id="replySender">پاسخ به:</div>
+                <div class="reply-indicator-text" id="replyText"></div>
+            </div>
+            <button class="cancel-reply" onclick="cancelReply()">✕</button>
+        </div>
+
         <div class="chat-container">
             <div class="messages-area" id="messagesArea">
                 <!-- پیام‌ها اینجا نمایش داده می‌شوند -->
@@ -953,9 +915,9 @@
     <!-- مدال‌ها -->
     <div id="newContactModal" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">مخاطب جدید</h2>
+            <h2 style="margin-bottom: 20px; text-align: center;">مخاطب جدید</h2>
             <input type="number" class="number-input" id="newContactNumber" 
-                   placeholder="شماره مخاطب" style="margin-bottom: 16px;">
+                   placeholder="شماره 11 رقمی" style="margin-bottom: 16px;">
             <input type="text" class="number-input" id="newContactName" 
                    placeholder="نام مخاطب (اختیاری)" style="margin-bottom: 24px;">
             <div style="display: flex; gap: 12px;">
@@ -966,14 +928,6 @@
         </div>
     </div>
 
-    <!-- مدال عکس -->
-    <div class="modal" id="imageModal">
-        <div class="modal-content" style="max-width: 90%; padding: 0; background: transparent;">
-            <img class="modal-image" id="modalImage" src="" alt="عکس" 
-                 style="width: 100%; height: auto; border-radius: 12px;">
-        </div>
-    </div>
-
     <!-- لودینگ -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
@@ -981,7 +935,7 @@
 
     <!-- فایل اینپوت مخفی -->
     <input type="file" id="imageInput" accept="image/*" style="display: none;" 
-           onchange="handleImageSelect(this.files[0])" capture="environment">
+           onchange="handleImageSelect(this.files[0])">
 
     <script>
         // ==================== متغیرهای اصلی ====================
@@ -990,7 +944,8 @@
         let currentContact = null;
         let contacts = {};
         let connections = {};
-        let pendingMessages = new Map(); // برای پیگیری وضعیت پیام‌ها
+        let pendingMessages = new Map();
+        let replyingTo = null; // برای سیستم ریپلای
         
         // سیستم تیک‌ها
         const MESSAGE_STATUS = {
@@ -1001,8 +956,7 @@
         };
         
         // مدیریت فایل‌های بزرگ
-        const CHUNK_SIZE = 64000; // 64KB chunks (بهینه‌شده)
-        const MAX_RETRIES = 3;
+        const CHUNK_SIZE = 32000; // 32KB chunks
         let currentUploads = new Map();
         let receivingFiles = new Map();
 
@@ -1010,12 +964,12 @@
         function initializePeer() {
             const myIdInput = document.getElementById('myIdInput').value.trim();
             
-            if (!myIdInput || myIdInput.length < 3) {
-                showNotification('لطفاً یک شماره معتبر وارد کنید');
+            if (!myIdInput || myIdInput.length !== 11) {
+                showNotification('لطفاً شماره 11 رقمی وارد کنید');
                 return;
             }
             
-            myId = myIdInput.padStart(9, '0').slice(-9);
+            myId = myIdInput;
             document.getElementById('loginBtn').disabled = true;
             
             showLoading('در حال راه‌اندازی...');
@@ -1040,7 +994,6 @@
         }
         
         function createPeer() {
-            // استفاده از سرور اختصاصی برای اطمینان بیشتر
             peer = new Peer(myId, {
                 host: '0.peerjs.com',
                 port: 443,
@@ -1060,10 +1013,10 @@
                 loadContacts();
                 showPage('contactsPage');
                 hideLoading();
-                showNotification(`خوش آمدید ${myId}!`);
+                showNotification(`به گپ آرانا خوش آمدید!`);
                 
                 // شروع نظارت بر اتصالات
-                setInterval(checkConnections, 5000);
+                setInterval(checkConnections, 30000);
             });
             
             peer.on('connection', (conn) => {
@@ -1076,11 +1029,6 @@
                     showNotification('این شماره قبلاً استفاده شده');
                     document.getElementById('loginBtn').disabled = false;
                 }
-            });
-            
-            peer.on('disconnected', () => {
-                showNotification('اتصال قطع شد. در حال تلاش مجدد...');
-                setTimeout(() => peer.reconnect(), 2000);
             });
         }
 
@@ -1139,7 +1087,7 @@
 
         // ==================== مدیریت مخاطبین ====================
         function loadContacts() {
-            const savedContacts = localStorage.getItem(`p2p_contacts_${myId}`);
+            const savedContacts = localStorage.getItem(`gap_arana_contacts_${myId}`);
             if (savedContacts) {
                 contacts = JSON.parse(savedContacts);
                 Object.values(contacts).forEach(contact => {
@@ -1150,7 +1098,7 @@
         }
         
         function saveContacts() {
-            localStorage.setItem(`p2p_contacts_${myId}`, JSON.stringify(contacts));
+            localStorage.setItem(`gap_arana_contacts_${myId}`, JSON.stringify(contacts));
         }
         
         function showNewContactModal() {
@@ -1168,11 +1116,11 @@
             const numberInput = document.getElementById('newContactNumber');
             const nameInput = document.getElementById('newContactName');
             
-            const contactNumber = numberInput.value.trim().padStart(9, '0').slice(-9);
+            const contactNumber = numberInput.value.trim();
             const contactName = nameInput.value.trim() || contactNumber;
             
-            if (!contactNumber || contactNumber.length < 3) {
-                showNotification('لطفاً شماره معتبر وارد کنید');
+            if (!contactNumber || contactNumber.length !== 11) {
+                showNotification('لطفاً شماره 11 رقمی وارد کنید');
                 return;
             }
             
@@ -1273,6 +1221,9 @@
             document.getElementById('chatAvatar').textContent = contact.avatar;
             updateContactStatus();
             
+            // مخفی کردن ریپلای
+            cancelReply();
+            
             showPage('chatPage');
             
             if (!contact.isOnline && !connections[contact.number]) {
@@ -1287,12 +1238,10 @@
                 connections[contactNumber].close();
             }
             
-            showNotification(`در حال اتصال به ${contactNumber}...`);
-            
             const conn = peer.connect(contactNumber, {
                 reliable: true,
                 serialization: 'json',
-                metadata: { type: 'chat', version: '1.0' }
+                metadata: { type: 'chat', version: '2.0' }
             });
             
             setupConnection(conn, contactNumber);
@@ -1336,14 +1285,8 @@
                 
                 renderContactsList();
                 
-                // ارسال پیام سلام
-                if (!contacts[contactNumber].messages || contacts[contactNumber].messages.length === 0) {
-                    conn.send({
-                        type: 'system',
-                        content: 'اتصال برقرار شد',
-                        timestamp: Date.now()
-                    });
-                }
+                // ارسال تأییدیه برای پیام‌های خوانده نشده
+                sendDeliveryConfirmations(contactNumber);
             });
             
             conn.on('data', (data) => {
@@ -1360,15 +1303,6 @@
                 
                 delete connections[contactNumber];
                 renderContactsList();
-                
-                // تلاش مجدد برای اتصال
-                if (currentContact && currentContact.number === contactNumber) {
-                    setTimeout(() => connectToContact(contactNumber), 3000);
-                }
-            });
-            
-            conn.on('error', (err) => {
-                console.error(`خطای اتصال با ${contactNumber}:`, err);
             });
         }
         
@@ -1399,7 +1333,28 @@
             });
         }
 
-        // ==================== سیستم ارسال و دریافت پیام‌ها با تیک ====================
+        // ==================== سیستم ریپلای ====================
+        function setReply(message) {
+            replyingTo = {
+                messageId: message.messageId,
+                sender: message.sender,
+                content: message.content || '📷 عکس',
+                timestamp: message.timestamp
+            };
+            
+            document.getElementById('replySender').textContent = `پاسخ به ${message.sender === myId ? 'خودتان' : message.sender}:`;
+            document.getElementById('replyText').textContent = replyingTo.content.substring(0, 50);
+            document.getElementById('replyIndicator').style.display = 'flex';
+            
+            document.getElementById('messageInput').focus();
+        }
+        
+        function cancelReply() {
+            replyingTo = null;
+            document.getElementById('replyIndicator').style.display = 'none';
+        }
+
+        // ==================== ارسال و دریافت پیام‌ها ====================
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
@@ -1420,20 +1375,22 @@
                 receiver: currentContact.number,
                 timestamp: Date.now(),
                 messageId: messageId,
-                status: MESSAGE_STATUS.SENDING
+                status: MESSAGE_STATUS.SENDING,
+                replyTo: replyingTo ? {
+                    messageId: replyingTo.messageId,
+                    sender: replyingTo.sender,
+                    content: replyingTo.content
+                } : null
             };
             
-            // ذخیره در تاریخچه با وضعیت ارسال
+            // ذخیره در تاریخچه
             saveMessageLocally(messageData);
             
             // نمایش با تیک در حال ارسال
             displayMessage(messageData, true);
             
             // ارسال از طریق اتصال
-            conn.send({
-                ...messageData,
-                status: MESSAGE_STATUS.SENT
-            });
+            conn.send(messageData);
             
             // ذخیره در pending برای پیگیری تیک
             pendingMessages.set(messageId, {
@@ -1442,9 +1399,10 @@
                 delivered: false
             });
             
-            // پاک کردن input
+            // پاک کردن input و ریپلای
             input.value = '';
             autoResize(input);
+            cancelReply();
             input.focus();
             
             // بروزرسانی مخاطبین
@@ -1458,10 +1416,8 @@
         function handleIncomingData(data, senderNumber) {
             switch (data.type) {
                 case 'text':
-                    handleIncomingMessage(data, senderNumber);
-                    break;
                 case 'image':
-                    handleIncomingImage(data, senderNumber);
+                    handleIncomingMessage(data, senderNumber);
                     break;
                 case 'file_chunk':
                     handleFileChunk(data, senderNumber);
@@ -1472,8 +1428,11 @@
                 case 'file_end':
                     completeReceivingFile(data, senderNumber);
                     break;
-                case 'message_status':
-                    updateMessageStatus(data.messageId, data.status);
+                case 'delivery_confirmation':
+                    updateMessageStatus(data.messageId, MESSAGE_STATUS.DELIVERED);
+                    break;
+                case 'read_confirmation':
+                    updateMessageStatus(data.messageId, MESSAGE_STATUS.READ);
                     break;
                 case 'ping':
                     // پاسخ به پینگ
@@ -1491,9 +1450,9 @@
             // ارسال تأییدیه تحویل
             if (connections[senderNumber]) {
                 connections[senderNumber].send({
-                    type: 'message_status',
+                    type: 'delivery_confirmation',
                     messageId: data.messageId,
-                    status: MESSAGE_STATUS.DELIVERED
+                    timestamp: Date.now()
                 });
             }
             
@@ -1501,52 +1460,59 @@
             saveMessageLocally(data, false);
             
             if (currentContact && currentContact.number === senderNumber) {
-                displayMessage(data, false);
+                if (data.type === 'image') {
+                    displayImageMessage(data, false);
+                } else {
+                    displayMessage(data, false);
+                }
+                
+                // ارسال تأییدیه خوانده شدن
+                setTimeout(() => {
+                    if (connections[senderNumber]) {
+                        connections[senderNumber].send({
+                            type: 'read_confirmation',
+                            messageId: data.messageId,
+                            timestamp: Date.now()
+                        });
+                    }
+                }, 1000);
             }
             
-            updateContactLastMessage(senderNumber, data.content, 'text');
+            updateContactLastMessage(senderNumber, data.type === 'image' ? '📷 عکس' : data.content, data.type);
             renderContactsList();
             
             // نوتیفیکیشن
             if (!currentContact || currentContact.number !== senderNumber) {
                 const contact = contacts[senderNumber];
-                showNotification(`${contact ? contact.name : senderNumber}: ${data.content.substring(0, 30)}`);
+                showNotification(`${contact ? contact.name : senderNumber}: ${data.type === 'image' ? '📷 عکس جدید' : data.content.substring(0, 30)}`);
             }
         }
         
-        function handleIncomingImage(data, senderNumber) {
-            // ارسال تأییدیه تحویل
-            if (connections[senderNumber]) {
-                connections[senderNumber].send({
-                    type: 'message_status',
-                    messageId: data.messageId,
-                    status: MESSAGE_STATUS.DELIVERED
-                });
-            }
+        function sendDeliveryConfirmations(contactNumber) {
+            if (!contacts[contactNumber] || !contacts[contactNumber].messages) return;
             
-            data.status = MESSAGE_STATUS.DELIVERED;
-            saveMessageLocally(data, false);
+            const conn = connections[contactNumber];
+            if (!conn || !conn.open) return;
             
-            if (currentContact && currentContact.number === senderNumber) {
-                displayImageMessage(data, false);
-            }
+            // ارسال تأییدیه برای پیام‌های خوانده نشده
+            contacts[contactNumber].messages.forEach(msg => {
+                if (msg.sender !== myId && msg.status !== MESSAGE_STATUS.READ) {
+                    conn.send({
+                        type: 'read_confirmation',
+                        messageId: msg.messageId,
+                        timestamp: Date.now()
+                    });
+                    msg.status = MESSAGE_STATUS.READ;
+                }
+            });
             
-            updateContactLastMessage(senderNumber, '📷 عکس', 'image');
-            renderContactsList();
-            
-            // نوتیفیکیشن
-            if (!currentContact || currentContact.number !== senderNumber) {
-                const contact = contacts[senderNumber];
-                showNotification(`${contact ? contact.name : senderNumber}: 📷 عکس جدید`);
-            }
+            saveContacts();
         }
         
         function updateMessageStatus(messageId, status) {
             const pending = pendingMessages.get(messageId);
             if (pending) {
                 pending.delivered = true;
-                
-                // بروزرسانی تیک در UI
                 updateMessageStatusUI(messageId, status);
                 
                 // بروزرسانی در تاریخچه
@@ -1558,6 +1524,8 @@
                         saveContacts();
                     }
                 }
+                
+                pendingMessages.delete(messageId);
             }
         }
         
@@ -1571,10 +1539,11 @@
             } else if (!pending.delivered) {
                 // بعد از 3 بار تلاش، به عنوان ارسال شده علامت بزن
                 updateMessageStatusUI(messageId, MESSAGE_STATUS.SENT);
+                pendingMessages.delete(messageId);
             }
         }
 
-        // ==================== سیستم ارسال عکس‌های بزرگ ====================
+        // ==================== سیستم ارسال عکس ====================
         function openImagePicker() {
             document.getElementById('imageInput').click();
         }
@@ -1585,8 +1554,8 @@
                 return;
             }
             
-            if (file.size > 50 * 1024 * 1024) { // 50MB limit
-                showNotification('حجم عکس باید کمتر از ۵۰ مگابایت باشد');
+            if (file.size > 20 * 1024 * 1024) { // 20MB limit
+                showNotification('حجم عکس باید کمتر از ۲۰ مگابایت باشد');
                 return;
             }
             
@@ -1598,12 +1567,12 @@
                 
                 // فشرده‌سازی برای عکس‌های بزرگ
                 let processedImage = base64String;
-                if (file.size > 5 * 1024 * 1024) {
+                if (file.size > 2 * 1024 * 1024) {
                     processedImage = await compressImage(base64String);
                 }
                 
                 hideLoading();
-                sendLargeImage(processedImage, file.name, file.type);
+                sendImage(processedImage, file.name);
             };
             
             reader.onerror = () => {
@@ -1622,27 +1591,28 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    // محاسبه ابعاد جدید با حفظ نسبت
+                    // محاسبه ابعاد جدید
                     let width = img.width;
                     let height = img.height;
-                    const maxWidth = 1920;
-                    const maxHeight = 1920;
+                    const maxDimension = 1600;
                     
-                    if (width > maxWidth || height > maxHeight) {
-                        const ratio = Math.min(maxWidth / width, maxHeight / height);
-                        width = Math.floor(width * ratio);
-                        height = Math.floor(height * ratio);
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.floor(height * maxDimension / width);
+                            width = maxDimension;
+                        } else {
+                            width = Math.floor(width * maxDimension / height);
+                            height = maxDimension;
+                        }
                     }
                     
                     canvas.width = width;
                     canvas.height = height;
                     
-                    // کشیدن تصویر با کیفیت مناسب
-                    ctx.imageSmoothingQuality = 'high';
                     ctx.drawImage(img, 0, 0, width, height);
                     
                     // تبدیل به base64 با کیفیت مناسب
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
                     resolve(compressedBase64);
                 };
                 
@@ -1650,7 +1620,7 @@
             });
         }
         
-        function sendLargeImage(base64String, fileName, fileType) {
+        function sendImage(base64String, fileName) {
             if (!currentContact || !connections[currentContact.number]) {
                 showNotification('اتصال برقرار نیست');
                 return;
@@ -1663,7 +1633,6 @@
             const uploadInfo = {
                 fileId,
                 fileName,
-                fileType,
                 chunks,
                 totalChunks,
                 sentChunks: 0,
@@ -1682,7 +1651,8 @@
                 fileType: 'image',
                 sender: myId,
                 timestamp: Date.now(),
-                messageId: uploadInfo.messageId
+                messageId: uploadInfo.messageId,
+                replyTo: replyingTo
             });
             
             // نمایش پیام در حال ارسال
@@ -1693,7 +1663,7 @@
                 timestamp: Date.now(),
                 messageId: uploadInfo.messageId,
                 status: MESSAGE_STATUS.SENDING,
-                uploadProgress: 0
+                replyTo: replyingTo
             };
             
             saveMessageLocally(messageData);
@@ -1701,17 +1671,16 @@
             
             // شروع ارسال تکه‌ها
             sendChunks(fileId);
+            
+            // ریست ریپلای
+            cancelReply();
         }
         
         function splitBase64IntoChunks(base64String, chunkSize) {
             const chunks = [];
-            let index = 0;
-            
-            while (index < base64String.length) {
-                chunks.push(base64String.substring(index, index + chunkSize));
-                index += chunkSize;
+            for (let i = 0; i < base64String.length; i += chunkSize) {
+                chunks.push(base64String.substring(i, i + chunkSize));
             }
-            
             return chunks;
         }
         
@@ -1725,7 +1694,7 @@
                 return;
             }
             
-            const sendNext = () => {
+            const sendNextChunk = () => {
                 if (uploadInfo.sentChunks >= uploadInfo.totalChunks) {
                     // تمام تکه‌ها ارسال شدند
                     conn.send({
@@ -1757,15 +1726,15 @@
                 const progress = Math.round((uploadInfo.sentChunks / uploadInfo.totalChunks) * 100);
                 updateUploadProgress(fileId, progress);
                 
-                // ارسال تکه بعدی با تأخیر کنترل‌شده
-                setTimeout(sendNext, 10); // کاهش تأخیر برای سرعت بیشتر
+                // ارسال تکه بعدی با تأخیر کم
+                setTimeout(sendNextChunk, 10);
             };
             
-            sendNext();
+            sendNextChunk();
         }
         
         function startReceivingFile(data, senderNumber) {
-            const { fileId, fileName, totalChunks, fileType, messageId } = data;
+            const { fileId, fileName, totalChunks, fileType, messageId, replyTo } = data;
             
             receivingFiles.set(fileId, {
                 fileId,
@@ -1776,6 +1745,7 @@
                 chunks: new Array(totalChunks),
                 sender: senderNumber,
                 messageId,
+                replyTo,
                 startTime: Date.now()
             });
             
@@ -1799,7 +1769,6 @@
             
             // بررسی تکمیل
             if (fileInfo.receivedChunks === fileInfo.totalChunks) {
-                // منتظر بمان تا مطمئن شویم همه تکه‌ها آماده‌اند
                 setTimeout(() => {
                     const finalFileInfo = receivingFiles.get(fileId);
                     if (finalFileInfo && finalFileInfo.receivedChunks === finalFileInfo.totalChunks) {
@@ -1831,17 +1800,9 @@
                 sender: fileInfo.sender,
                 timestamp: Date.now(),
                 messageId: fileInfo.messageId,
-                status: MESSAGE_STATUS.DELIVERED
+                status: MESSAGE_STATUS.DELIVERED,
+                replyTo: fileInfo.replyTo
             };
-            
-            // ارسال تأییدیه
-            if (connections[senderNumber]) {
-                connections[senderNumber].send({
-                    type: 'message_status',
-                    messageId: fileInfo.messageId,
-                    status: MESSAGE_STATUS.DELIVERED
-                });
-            }
             
             // ذخیره و نمایش
             saveMessageLocally(messageData, false);
@@ -1852,12 +1813,6 @@
             
             updateContactLastMessage(senderNumber, '📷 عکس', 'image');
             renderContactsList();
-            
-            // نوتیفیکیشن
-            if (!currentContact || currentContact.number !== senderNumber) {
-                const contact = contacts[senderNumber];
-                showNotification(`${contact ? contact.name : senderNumber}: 📷 عکس جدید`);
-            }
         }
 
         // ==================== نمایش پیام‌ها و UI ====================
@@ -1867,11 +1822,8 @@
             
             if (!currentContact || !currentContact.messages || currentContact.messages.length === 0) {
                 container.innerHTML = `
-                    <div class="system-message">
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
                         <p>شروع گفتگو با ${currentContact.name}</p>
-                        <p style="font-size: 12px; margin-top: 8px; opacity: 0.7;">
-                            پیام خود را در پایین صفحه بنویسید
-                        </p>
                     </div>
                 `;
                 return;
@@ -1895,12 +1847,28 @@
             wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
             if (noAnimation) wrapper.style.animation = 'none';
             
+            wrapper.onclick = () => {
+                if (!isOutgoing) {
+                    setReply(messageData);
+                }
+            };
+            
             const time = formatTime(messageData.timestamp);
             const status = getStatusIcon(messageData.status);
             
+            let replyHtml = '';
+            if (messageData.replyTo) {
+                replyHtml = `
+                    <div class="reply-preview" onclick="scrollToMessage('${messageData.replyTo.messageId}')">
+                        <div class="reply-sender">${messageData.replyTo.sender === myId ? 'شما' : messageData.replyTo.sender}</div>
+                        <div class="reply-content">${messageData.replyTo.content}</div>
+                    </div>
+                `;
+            }
+            
             wrapper.innerHTML = `
                 <div class="message ${isOutgoing ? 'outgoing' : 'incoming'}">
-                    ${!isOutgoing ? `<div class="message-sender">${messageData.sender}</div>` : ''}
+                    ${replyHtml}
                     <div class="message-content">${escapeHtml(messageData.content)}</div>
                     <div class="message-footer">
                         <div class="message-time">${time}</div>
@@ -1910,6 +1878,7 @@
             `;
             
             container.appendChild(wrapper);
+            wrapper.setAttribute('data-message-id', messageData.messageId);
             
             if (!noAnimation) {
                 scrollToBottom();
@@ -1923,19 +1892,37 @@
             wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
             if (noAnimation) wrapper.style.animation = 'none';
             
+            wrapper.onclick = () => {
+                if (!isOutgoing) {
+                    setReply(messageData);
+                }
+            };
+            
             const time = formatTime(messageData.timestamp);
             const status = getStatusIcon(messageData.status);
             
+            let replyHtml = '';
+            if (messageData.replyTo) {
+                replyHtml = `
+                    <div class="reply-preview" onclick="scrollToMessage('${messageData.replyTo.messageId}')">
+                        <div class="reply-sender">${messageData.replyTo.sender === myId ? 'شما' : messageData.replyTo.sender}</div>
+                        <div class="reply-content">${messageData.replyTo.content}</div>
+                    </div>
+                `;
+            }
+            
             wrapper.innerHTML = `
                 <div class="message ${isOutgoing ? 'outgoing' : 'incoming'}">
-                    ${!isOutgoing ? `<div class="message-sender">${messageData.sender}</div>` : ''}
-                    <div class="message-image-container">
-                        <div class="image-badge">📷 عکس</div>
+                    ${replyHtml}
+                    <div style="position: relative;">
                         <img src="${messageData.content}" 
-                             class="message-image"
-                             onclick="showImageInModal('${messageData.content.replace(/'/g, "\\'")}')"
-                             onload="this.classList.add('loaded')"
-                             alt="عکس">
+                             style="max-width: 250px; border-radius: 8px; display: block; cursor: pointer;"
+                             onclick="showImage('${messageData.content.replace(/'/g, "\\'")}')"
+                             onload="this.style.opacity='1'"
+                             style="opacity:0;transition:opacity 0.3s">
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+                            📷 عکس
+                        </div>
                     </div>
                     <div class="message-footer">
                         <div class="message-time">${time}</div>
@@ -1945,6 +1932,7 @@
             `;
             
             container.appendChild(wrapper);
+            wrapper.setAttribute('data-message-id', messageData.messageId);
             
             if (!noAnimation) {
                 scrollToBottom();
@@ -1963,21 +1951,21 @@
                     <div class="message outgoing">
                         <div class="message-content">
                             <div style="margin-bottom: 8px;">📷 در حال ارسال عکس...</div>
-                            <div class="progress-container">
-                                <div class="progress-bar" style="width: ${progress}%"></div>
+                            <div style="width: 200px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: var(--accent-green); width: ${progress}%; transition: width 0.3s;"></div>
                             </div>
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 4px;">
-                                ${progress}% - ${totalChunks} تکه
+                                ${progress}%
                             </div>
                         </div>
                     </div>
                 `;
                 container.appendChild(progressEl);
             } else {
-                const bar = progressEl.querySelector('.progress-bar');
+                const bar = progressEl.querySelector('div div');
                 const text = progressEl.querySelector('div:last-child');
                 if (bar) bar.style.width = `${progress}%`;
-                if (text) text.textContent = `${progress}% - ${totalChunks} تکه`;
+                if (text) text.textContent = `${progress}%`;
             }
             
             scrollToBottom();
@@ -1995,21 +1983,21 @@
                     <div class="message incoming">
                         <div class="message-content">
                             <div style="margin-bottom: 8px;">📷 در حال دریافت عکس...</div>
-                            <div class="progress-container">
-                                <div class="progress-bar" style="width: ${progress}%"></div>
+                            <div style="width: 200px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: var(--accent-green); width: ${progress}%; transition: width 0.3s;"></div>
                             </div>
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 4px;">
-                                ${progress}% - ${totalChunks} تکه
+                                ${progress}%
                             </div>
                         </div>
                     </div>
                 `;
                 container.appendChild(progressEl);
             } else {
-                const bar = progressEl.querySelector('.progress-bar');
+                const bar = progressEl.querySelector('div div');
                 const text = progressEl.querySelector('div:last-child');
                 if (bar) bar.style.width = `${progress}%`;
-                if (text) text.textContent = `${progress}% - ${totalChunks} تکه`;
+                if (text) text.textContent = `${progress}%`;
             }
             
             scrollToBottom();
@@ -2018,30 +2006,20 @@
         function updateUploadProgress(fileId, progress) {
             const progressEl = document.getElementById(`upload-${fileId}`);
             if (progressEl) {
-                const bar = progressEl.querySelector('.progress-bar');
+                const bar = progressEl.querySelector('div div');
                 const text = progressEl.querySelector('div:last-child');
                 if (bar) bar.style.width = `${progress}%`;
-                if (text) {
-                    const uploadInfo = currentUploads.get(fileId);
-                    if (uploadInfo) {
-                        text.textContent = `${progress}% - ${uploadInfo.sentChunks}/${uploadInfo.totalChunks} تکه`;
-                    }
-                }
+                if (text) text.textContent = `${progress}%`;
             }
         }
         
         function updateDownloadProgress(fileId, progress) {
             const progressEl = document.getElementById(`download-${fileId}`);
             if (progressEl) {
-                const bar = progressEl.querySelector('.progress-bar');
+                const bar = progressEl.querySelector('div div');
                 const text = progressEl.querySelector('div:last-child');
                 if (bar) bar.style.width = `${progress}%`;
-                if (text) {
-                    const fileInfo = receivingFiles.get(fileId);
-                    if (fileInfo) {
-                        text.textContent = `${progress}% - ${fileInfo.receivedChunks}/${fileInfo.totalChunks} تکه`;
-                    }
-                }
+                if (text) text.textContent = `${progress}%`;
             }
         }
         
@@ -2073,11 +2051,14 @@
         }
         
         function updateMessageStatusUI(messageId, status) {
-            const messages = document.querySelectorAll('.message');
-            messages.forEach(msg => {
-                const statusEl = msg.querySelector('.message-status');
-                if (statusEl && msg.querySelector('.message-content')?.textContent.includes(messageId)) {
-                    statusEl.innerHTML = getStatusIcon(status);
+            const messages = document.querySelectorAll('.message-wrapper');
+            messages.forEach(wrapper => {
+                const messageDiv = wrapper.querySelector('.message');
+                if (messageDiv && wrapper.getAttribute('data-message-id') === messageId) {
+                    const statusEl = messageDiv.querySelector('.message-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = getStatusIcon(status);
+                    }
                 }
             });
         }
@@ -2096,6 +2077,46 @@
                     return '<span class="status-icon">↗</span>';
             }
         }
+        
+        function scrollToMessage(messageId) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                messageEl.style.animation = 'none';
+                setTimeout(() => {
+                    messageEl.style.backgroundColor = 'rgba(0, 175, 156, 0.1)';
+                    setTimeout(() => {
+                        messageEl.style.backgroundColor = '';
+                    }, 1000);
+                }, 100);
+            }
+        }
+        
+        function showImage(base64String) {
+            const img = new Image();
+            img.src = base64String;
+            img.style.maxWidth = '90%';
+            img.style.maxHeight = '90%';
+            img.style.borderRadius = '8px';
+            
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.right = '0';
+            overlay.style.bottom = '0';
+            overlay.style.background = 'rgba(0,0,0,0.9)';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.zIndex = '3000';
+            overlay.style.cursor = 'pointer';
+            
+            overlay.onclick = () => overlay.remove();
+            
+            overlay.appendChild(img);
+            document.body.appendChild(overlay);
+        }
 
         // ==================== Helper Functions ====================
         function saveMessageLocally(messageData, isOutgoing = true) {
@@ -2105,8 +2126,8 @@
             currentContact.messages.push(messageData);
             
             // محدود کردن تعداد پیام‌ها
-            if (currentContact.messages.length > 500) {
-                currentContact.messages = currentContact.messages.slice(-500);
+            if (currentContact.messages.length > 1000) {
+                currentContact.messages = currentContact.messages.slice(-1000);
             }
             
             saveContacts();
@@ -2119,15 +2140,6 @@
                 contact.lastMessageTime = Date.now();
                 saveContacts();
             }
-        }
-        
-        function showImageInModal(base64String) {
-            document.getElementById('modalImage').src = base64String;
-            document.getElementById('imageModal').classList.add('active');
-        }
-        
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.remove('active');
         }
         
         function showNotification(text) {
@@ -2149,7 +2161,7 @@
         
         function autoResize(textarea) {
             textarea.style.height = 'auto';
-            const newHeight = Math.min(Math.max(textarea.scrollHeight, 46), 120);
+            const newHeight = Math.min(Math.max(textarea.scrollHeight, 44), 100);
             textarea.style.height = newHeight + 'px';
             
             // فعال/غیرفعال کردن دکمه ارسال
@@ -2201,11 +2213,7 @@
                 }
             });
             
-            // بستن مدال‌ها با کلیک خارج
-            document.getElementById('imageModal').addEventListener('click', function(e) {
-                if (e.target === this) closeImageModal();
-            });
-            
+            // بستن مدال با کلیک خارج
             document.getElementById('newContactModal').addEventListener('click', function(e) {
                 if (e.target === this) closeNewContactModal();
             });
@@ -2213,7 +2221,6 @@
             // بستن با Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    closeImageModal();
                     closeNewContactModal();
                 }
             });

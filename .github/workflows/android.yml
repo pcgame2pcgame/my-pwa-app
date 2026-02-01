@@ -1,0 +1,287 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # امکان اجرای دستی
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Create Android project structure
+      run: |
+        # ایجاد پوشه‌های اصلی
+        mkdir -p app/src/main/java/com/gap/arana
+        mkdir -p app/src/main/res/layout
+        mkdir -p app/src/main/res/values
+        mkdir -p app/src/main/assets
+        mkdir -p app/libs
+        
+        # کپی کد HTML به assets
+        cp index.html app/src/main/assets/
+        
+        # ایجاد فایل MainActivity.kt
+        cat > app/src/main/java/com/gap/arana/MainActivity.kt << 'EOF'
+        package com.arana.gap
+        
+        import android.annotation.SuppressLint
+        import android.os.Bundle
+        import android.webkit.WebChromeClient
+        import android.webkit.WebSettings
+        import android.webkit.WebView
+        import android.webkit.WebViewClient
+        import androidx.appcompat.app.AppCompatActivity
+        
+        class MainActivity : AppCompatActivity() {
+            private lateinit var webView: WebView
+            
+            @SuppressLint("SetJavaScriptEnabled")
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                setContentView(R.layout.activity_main)
+                
+                webView = findViewById(R.id.webView)
+                
+                // تنظیمات WebView
+                val webSettings: WebSettings = webView.settings
+                webSettings.javaScriptEnabled = true
+                webSettings.domStorageEnabled = true
+                webSettings.databaseEnabled = true
+                webSettings.allowFileAccess = true
+                webSettings.allowContentAccess = true
+                webSettings.allowUniversalAccessFromFileURLs = true
+                webSettings.loadWithOverviewMode = true
+                webSettings.useWideViewPort = true
+                
+                // WebAssembly برای Pyodide
+                webSettings.mixedContentMode = 0
+                
+                // Client ها
+                webView.webViewClient = WebViewClient()
+                webView.webChromeClient = WebChromeClient()
+                
+                // بارگیری فایل HTML از assets
+                webView.loadUrl("file:///android_asset/index.html")
+            }
+            
+            override fun onBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    super.onBackPressed()
+                }
+            }
+        }
+        EOF
+        
+        # ایجاد فایل layout
+        cat > app/src/main/res/layout/activity_main.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <androidx.constraintlayout.widget.ConstraintLayout 
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            
+            <WebView
+                android:id="@+id/webView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+                
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        EOF
+        
+        # ایجاد فایل strings.xml
+        cat > app/src/main/res/values/strings.xml << 'EOF'
+        <resources>
+            <string name="app_name">گپ آرانا</string>
+        </resources>
+        EOF
+        
+        # ایجاد AndroidManifest.xml
+        cat > app/src/main/AndroidManifest.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools">
+            
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            
+            <application
+                android:allowBackup="true"
+                android:icon="@mipmap/ic_launcher"
+                android:label="@string/app_name"
+                android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
+                android:usesCleartextTraffic="true"
+                android:hardwareAccelerated="true"
+                tools:targetApi="31">
+                
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true"
+                    android:configChanges="orientation|screenSize|keyboardHidden"
+                    android:windowSoftInputMode="adjustResize">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+        
+        # ایجاد فایل build.gradle (ماژول)
+        cat > app/build.gradle << 'EOF'
+        plugins {
+            id 'com.android.application'
+            id 'org.jetbrains.kotlin.android'
+        }
+        
+        android {
+            namespace 'com.gap.arana'
+            compileSdk 34
+            
+            defaultConfig {
+                applicationId "com.gap.arana"
+                minSdk 21
+                targetSdk 34
+                versionCode 1
+                versionName "1.0"
+                
+                testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+            }
+            
+            buildTypes {
+                release {
+                    minifyEnabled false
+                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                }
+            }
+            
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_1_8
+                targetCompatibility JavaVersion.VERSION_1_8
+            }
+            
+            kotlinOptions {
+                jvmTarget = '1.8'
+            }
+            
+            buildFeatures {
+                viewBinding true
+            }
+        }
+        
+        dependencies {
+            implementation 'androidx.core:core-ktx:1.12.0'
+            implementation 'androidx.appcompat:appcompat:1.6.1'
+            implementation 'com.google.android.material:material:1.10.0'
+            implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+            testImplementation 'junit:junit:4.13.2'
+            androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+            androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+        }
+        EOF
+        
+        # ایجاد فایل build.gradle (پروژه)
+        cat > build.gradle << 'EOF'
+        buildscript {
+            ext.kotlin_version = '1.8.0'
+            repositories {
+                google()
+                mavenCentral()
+            }
+            dependencies {
+                classpath 'com.android.tools.build:gradle:8.1.0'
+                classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+            }
+        }
+        
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        
+        task clean(type: Delete) {
+            delete rootProject.buildDir
+        }
+        EOF
+        
+        # ایجاد settings.gradle
+        cat > settings.gradle << 'EOF'
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        
+        rootProject.name = "GapArana"
+        include ':app'
+        EOF
+        
+        # ایجاد gradle.properties
+        cat > gradle.properties << 'EOF'
+        org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+        android.useAndroidX=true
+        android.enableJetifier=true
+        EOF
+        
+        # ایجاد gradlewrapper
+        echo "Creating gradle wrapper..."
+        
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: '8.4'
+        
+    - name: Make gradlew executable
+      run: |
+        wget https://raw.githubusercontent.com/gradle/gradle/master/gradlew
+        chmod +x gradlew
+        
+    - name: Build APK with Gradle
+      run: |
+        ./gradlew assembleDebug
+        
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: gap-arana-app
+        path: app/build/outputs/apk/debug/
+        
+    - name: Upload APK to workflow
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-apk
+        path: app/build/outputs/apk/debug/*.apk

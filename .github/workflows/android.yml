@@ -8,24 +8,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Create simple Android project
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        
+    - name: Create complete Android project
       run: |
-        # ایجاد ساختار پوشه‌ها
+        # 1. ساختار پوشه‌ها
         mkdir -p app/src/main/java/com/gap/arana
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
         mkdir -p app/src/main/assets
+        mkdir -p gradle/wrapper
         
-        # کپی فایل HTML
+        # 2. کپی فایل HTML
         cp index.html app/src/main/assets/
         
-        # ایجاد MainActivity.kt ساده
+        # 3. MainActivity.kt
         cat > app/src/main/java/com/gap/arana/MainActivity.kt << 'EOF'
         package com.gap.arana
         
@@ -48,44 +55,53 @@ jobs:
         }
         EOF
         
-        # ایجاد layout
+        # 4. Layout
         cat > app/src/main/res/layout/activity_main.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <androidx.constraintlayout.widget.ConstraintLayout 
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
             
             <WebView
                 android:id="@+id/webView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
                 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
         EOF
         
-        # ایجاد strings.xml
+        # 5. Strings
         cat > app/src/main/res/values/strings.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
         <resources>
             <string name="app_name">گپ آرانا</string>
         </resources>
         EOF
         
-        # ایجاد AndroidManifest.xml
+        # 6. Manifest
         cat > app/src/main/AndroidManifest.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools">
+            
             <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             
             <application
                 android:allowBackup="true"
                 android:icon="@mipmap/ic_launcher"
                 android:label="@string/app_name"
-                android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+                android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
+                android:usesCleartextTraffic="true"
+                tools:targetApi="31">
                 
                 <activity
                     android:name=".MainActivity"
-                    android:exported="true">
+                    android:exported="true"
+                    android:configChanges="orientation|screenSize|keyboardHidden"
+                    android:windowSoftInputMode="adjustResize">
                     <intent-filter>
                         <action android:name="android.intent.action.MAIN" />
                         <category android:name="android.intent.category.LAUNCHER" />
@@ -95,7 +111,7 @@ jobs:
         </manifest>
         EOF
         
-        # ایجاد build.gradle (ماژول)
+        # 7. Module build.gradle
         cat > app/build.gradle << 'EOF'
         plugins {
             id 'com.android.application'
@@ -118,14 +134,20 @@ jobs:
                     minifyEnabled false
                 }
             }
+            
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_1_8
+                targetCompatibility JavaVersion.VERSION_1_8
+            }
         }
         
         dependencies {
             implementation 'androidx.appcompat:appcompat:1.6.1'
+            implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
         }
         EOF
         
-        # ایجاد build.gradle (پروژه)
+        # 8. Project build.gradle
         cat > build.gradle << 'EOF'
         buildscript {
             repositories {
@@ -133,7 +155,7 @@ jobs:
                 mavenCentral()
             }
             dependencies {
-                classpath 'com.android.tools.build:gradle:8.0.2'
+                classpath 'com.android.tools.build:gradle:7.4.2'
             }
         }
         
@@ -143,14 +165,19 @@ jobs:
                 mavenCentral()
             }
         }
+        
+        task clean(type: Delete) {
+            delete rootProject.buildDir
+        }
         EOF
         
-        # ایجاد settings.gradle
+        # 9. Settings.gradle
         cat > settings.gradle << 'EOF'
         pluginManagement {
             repositories {
                 google()
                 mavenCentral()
+                gradlePluginPortal()
             }
         }
         dependencyResolutionManagement {
@@ -165,36 +192,57 @@ jobs:
         include ':app'
         EOF
         
-        # ایجاد gradle wrapper properties
+        # 10. Gradle properties
         cat > gradle.properties << 'EOF'
         org.gradle.jvmargs=-Xmx2048m
         android.useAndroidX=true
+        android.enableJetifier=true
         EOF
         
-    - name: Setup Java
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
+        # 11. Gradle wrapper properties
+        cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+        distributionBase=GRADLE_USER_HOME
+        distributionPath=wrapper/dists
+        distributionUrl=https\://services.gradle.org/distributions/gradle-7.5-bin.zip
+        zipStoreBase=GRADLE_USER_HOME
+        zipStorePath=wrapper/dists
+        EOF
         
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v2
-        
-    - name: Build APK
+    - name: Download Gradle wrapper
       run: |
-        # اجازه دادن به فایل‌های اجرایی
-        chmod +x gradlew || true
+        # دانلود gradlew اصلی
+        wget https://raw.githubusercontent.com/gradle/gradle/master/gradlew
+        chmod +x gradlew
         
+        # دانلود gradle wrapper jar
+        mkdir -p gradle/wrapper
+        wget https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar -O gradle/wrapper/gradle-wrapper.jar
+        
+    - name: Build APK with Gradle
+      run: |
         # ساخت APK
-        ./gradlew assembleDebug || echo "Build completed"
+        ./gradlew assembleDebug --stacktrace
         
-    - name: Find APK
+    - name: Find and list APK files
       run: |
-        find . -name "*.apk" -type f || echo "No APK found"
+        echo "Looking for APK files..."
+        find . -name "*.apk" -type f | while read file; do
+          echo "Found APK: $file"
+          ls -la "$file"
+        done
         
-    - name: Upload APK
+        # اگر APK پیدا نشد، حداقل ساختار را بررسی کن
+        if [ ! -f app/build/outputs/apk/debug/*.apk ]; then
+          echo "Checking build directory..."
+          ls -la app/build/ || true
+          ls -la app/build/outputs/ || true
+        fi
+        
+    - name: Upload APK if exists
       uses: actions/upload-artifact@v4
       with:
         name: gap-arana-app
-        path: app/build/outputs/apk/debug/*.apk
+        path: |
+          app/build/outputs/apk/debug/*.apk
+          app/build/outputs/apk/debug/*.apk*
         if-no-files-found: warn

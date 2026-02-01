@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>چت مستقیم P2P</title>
     <style>
+        /* Reset و متغیرها */
         * {
             margin: 0; padding: 0; box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         :root {
@@ -23,205 +24,101 @@
             background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
             color: var(--dark);
             min-height: 100vh;
-            padding: 10px;
             -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
         }
         
-        .app-container {
+        /* صفحه اول - تنظیمات اتصال */
+        .setup-page {
             width: 100%;
-            height: calc(100vh - 20px);
-            max-height: 900px;
-            background: white;
-            border-radius: 28px;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-            position: relative;
-        }
-        
-        /* هدر */
-        .app-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 22px 20px 18px;
-            text-align: center;
-            position: relative;
-            flex-shrink: 0;
-        }
-        
-        .app-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 12px;
-        }
-        
-        /* بخش تنظیمات شناسه */
-        .id-section {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            align-items: center;
             padding: 20px;
-            margin: 20px 15px 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
+            transition: transform 0.5s ease;
         }
         
-        .id-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .setup-page.hidden {
+            transform: translateY(-100%);
         }
         
-        .id-label {
-            font-size: 0.95rem;
-            opacity: 0.9;
-            margin-bottom: 5px;
-            display: block;
-        }
-        
-        .id-input {
+        .setup-container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
             width: 100%;
-            padding: 18px 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 1.3rem;
-            font-weight: 600;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
-            letter-spacing: 2px;
-            transition: all 0.3s;
         }
         
-        .id-input:focus {
-            outline: none;
-            border-color: white;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
-        }
-        
-        .id-display {
-            font-size: 1.8rem;
-            font-weight: 800;
-            font-family: 'Courier New', monospace;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-            margin-top: 10px;
-            direction: ltr;
-        }
-        
-        /* ناحیه پیام‌ها */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background: var(--light);
-        }
-        
-        .messages-view {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* پیام‌ها */
-        .message {
-            max-width: 90%;
-            padding: 14px 18px;
-            border-radius: 22px;
-            word-wrap: break-word;
-            position: relative;
-            animation: fadeIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-            line-height: 1.5;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .message.local {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--primary), #7209b7);
-            color: white;
-            border-bottom-right-radius: 8px;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-        }
-        
-        .message.remote {
-            align-self: flex-start;
-            background: white;
-            color: var(--dark);
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-        
-        .message.system {
-            align-self: center;
-            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
-            color: #d63031;
-            font-size: 0.9rem;
-            text-align: center;
-            max-width: 95%;
-            border-radius: 16px;
-            padding: 12px 20px;
-            font-weight: 500;
-        }
-        
-        .message-time {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 6px;
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
             display: block;
         }
         
-        /* کنترل‌های پایین */
-        .controls-container {
-            background: white;
-            border-top: 1px solid #eee;
-            padding: 20px 20px max(20px, env(safe-area-inset-bottom));
-            flex-shrink: 0;
-            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.08);
+        .title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
         }
         
-        /* دکمه‌های اصلی */
-        .primary-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+        .input-group {
+            margin-bottom: 25px;
+            text-align: right;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .number-input {
+            width: 100%;
+            padding: 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            font-family: monospace;
+        }
+        
+        .number-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
         }
         
         .btn {
-            flex: 1;
-            padding: 20px;
+            width: 100%;
+            padding: 22px;
             border: none;
-            border-radius: 18px;
-            font-size: 1.1rem;
+            border-radius: 20px;
+            font-size: 1.2rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 15px;
+            margin-top: 15px;
         }
         
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
         }
         
         .btn-success {
@@ -229,18 +126,9 @@
             color: white;
         }
         
-        .btn-danger {
-            background: linear-gradient(135deg, #f72585, #b5179e);
-            color: white;
-        }
-        
         .btn:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn:active:not(:disabled) {
-            transform: translateY(-1px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
         
         .btn:disabled {
@@ -249,14 +137,136 @@
             transform: none !important;
         }
         
+        /* صفحه چت */
+        .chat-page {
+            width: 100%;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .chat-page.active {
+            display: flex;
+        }
+        
+        /* هدر چت */
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .connection-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .disconnect-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        /* ناحیه پیام‌ها */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 15px 20px;
+            border-radius: 25px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            line-height: 1.5;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.outgoing {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--primary), #7209b7);
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .message.incoming {
+            align-self: flex-start;
+            background: white;
+            color: var(--dark);
+            border: 2px solid #e9ecef;
+            border-bottom-left-radius: 8px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message.system {
+            align-self: center;
+            background: #ffeaa7;
+            color: #d63031;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 90%;
+            border-radius: 15px;
+            padding: 12px 20px;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: block;
+        }
+        
+        /* کنترل‌های پایین */
+        .chat-controls {
+            background: white;
+            border-top: 1px solid #eee;
+            padding: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+        }
+        
         /* انتخاب‌گر حالت */
         .mode-selector {
             display: flex;
             justify-content: space-around;
             margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 24px;
         }
         
         .mode-btn {
@@ -272,7 +282,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .mode-btn.active {
@@ -280,26 +290,25 @@
             color: white;
             border-color: white;
             transform: scale(1.1);
-            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
         }
         
-        /* ناحیه‌های ورودی */
+        /* ناحیه ورودی */
         .input-area {
             display: none;
-            animation: slideUp 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         
         .input-area.active {
             display: block;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         /* حالت متن */
-        .text-input-wrapper {
+        .text-input-container {
             display: flex;
             gap: 15px;
             align-items: center;
@@ -309,7 +318,7 @@
             flex: 1;
             padding: 20px;
             border: 2px solid #e0e0e0;
-            border-radius: 20px;
+            border-radius: 25px;
             font-size: 1.1rem;
             transition: all 0.3s;
         }
@@ -317,43 +326,15 @@
         #textInput:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
         
-        /* حالت ویدیو */
-        .video-container {
-            position: relative;
-            width: 100%;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .video-element {
-            width: 100%;
-            display: block;
-            background: #000;
-        }
-        
-        .video-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
-        
-        .video-btn {
+        .send-btn {
             width: 60px;
             height: 60px;
             border-radius: 50%;
             border: none;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
@@ -363,17 +344,111 @@
             justify-content: center;
         }
         
-        .video-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        /* حالت تماس */
+        .call-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .call-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .call-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
+        }
+        
+        .call-btn.end-call {
+            background: linear-gradient(135deg, #f72585, #b5179e);
+        }
+        
+        .call-btn:hover {
             transform: scale(1.1);
         }
         
-        .video-btn.active {
-            background: var(--danger);
+        /* ویدیو کانتینر */
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        @media (min-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .video-wrapper.local {
+            border: 3px solid var(--primary);
+        }
+        
+        .video-wrapper.remote {
+            border: 3px solid #4cc9f0;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+        
+        .video-label {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 1;
         }
         
         /* حالت‌های دیگر */
-        .media-controls {
+        .media-upload-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -384,7 +459,7 @@
             background: linear-gradient(135deg, #4cc9f0, #4361ee);
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 25px;
             font-size: 1.2rem;
             font-weight: 700;
             cursor: pointer;
@@ -395,52 +470,66 @@
             transition: all 0.3s;
         }
         
-        .preview-area {
+        .preview-box {
             margin: 20px 0;
-            padding: 20px;
+            padding: 25px;
             background: #f8f9fa;
             border-radius: 20px;
             border: 3px dashed #dee2e6;
             text-align: center;
         }
         
-        /* وضعیت اتصال */
-        .connection-status {
+        /* نوتیفیکیشن */
+        .notification {
             position: fixed;
             top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            right: 20px;
+            background: #4CAF50;
             color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            font-size: 0.9rem;
+            padding: 15px 25px;
+            border-radius: 15px;
             font-weight: 600;
             z-index: 1000;
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
         }
         
-        /* رسپانسیو برای موبایل */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        
+        /* اسکرول بار */
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .messages-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        /* رسپانسیو */
         @media (max-height: 700px) {
-            .app-container {
-                height: 100vh;
-                max-height: none;
-                border-radius: 0;
-            }
-            
-            .app-header {
-                padding: 18px 15px 15px;
-            }
-            
-            .id-section {
+            .chat-header {
                 padding: 15px;
-                margin: 15px 10px 10px;
             }
             
-            .btn {
-                padding: 18px;
+            .messages-container {
+                padding: 15px;
+            }
+            
+            .chat-controls {
+                padding: 15px;
             }
             
             .mode-btn {
@@ -449,239 +538,190 @@
                 font-size: 1.6rem;
             }
             
-            .messages-view {
-                padding: 15px;
+            .call-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
             }
-        }
-        
-        @media (max-width: 480px) {
-            .primary-buttons {
-                flex-direction: column;
-            }
-            
-            .id-input {
-                font-size: 1.2rem;
-                padding: 16px;
-            }
-            
-            .message {
-                max-width: 95%;
-                padding: 12px 16px;
-            }
-        }
-        
-        /* اسکرول بار */
-        .messages-view::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .messages-view::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .messages-view::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-        
-        .messages-view::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
-        /* انیمیشن‌های اضافی */
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        .shake {
-            animation: shake 0.5s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
         }
     </style>
 </head>
 <body>
-    <!-- وضعیت اتصال -->
-    <div class="connection-status" id="connectionStatus">
-        <span id="statusIcon">🔴</span>
-        <span id="statusText">قطع</span>
-    </div>
-
-    <!-- برنامه اصلی -->
-    <div class="app-container">
-        <!-- هدر -->
-        <header class="app-header">
-            <div class="app-title">
-                <span>📱</span>
-                <span>چت مستقیم P2P</span>
-                <span>💬</span>
+    <!-- صفحه اول: تنظیمات اتصال -->
+    <div class="setup-page" id="setupPage">
+        <div class="setup-container">
+            <div class="logo">💬</div>
+            <h1 class="title">چت مستقیم P2P</h1>
+            
+            <div class="input-group">
+                <label class="input-label">کد اتصال شما:</label>
+                <input type="number" class="number-input" id="myCodeInput" 
+                       placeholder="مثلاً: 123456789" maxlength="9" 
+                       inputmode="numeric" pattern="[0-9]*">
             </div>
             
-            <!-- بخش شناسه -->
-            <div class="id-section">
-                <div class="id-input-group">
-                    <label class="id-label">کد اتصال من:</label>
-                    <input type="number" class="id-input" id="myCodeInput" 
-                           placeholder="مثلاً: 123456789" maxlength="9" 
-                           inputmode="numeric" pattern="[0-9]*">
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 15px;">
-                        <button class="btn btn-primary" onclick="setMyCode()" id="setCodeBtn">
-                            <span>✅</span>
-                            <span>تنظیم کد من</span>
-                        </button>
-                        
-                        <button class="btn btn-success" onclick="copyMyCode()" id="copyCodeBtn" disabled>
-                            <span>📋</span>
-                            <span>کپی کد</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <label class="id-label">کد مخاطب:</label>
-                    <input type="number" class="id-input" id="friendCodeInput" 
-                           placeholder="کد مخاطب را وارد کنید" inputmode="numeric">
-                    
-                    <button class="btn btn-primary" onclick="connectToFriend()" 
-                            id="connectBtn" disabled style="width: 100%; margin-top: 15px;">
-                        <span>🔗</span>
-                        <span>اتصال به مخاطب</span>
-                    </button>
-                </div>
+            <button class="btn btn-primary" onclick="setMyCode()" id="setCodeBtn">
+                <span>✅</span>
+                <span>تایید کد من</span>
+            </button>
+            
+            <div class="input-group" style="margin-top: 30px;">
+                <label class="input-label">کد مخاطب:</label>
+                <input type="number" class="number-input" id="friendCodeInput" 
+                       placeholder="کد مخاطب را وارد کنید" inputmode="numeric">
             </div>
+            
+            <button class="btn btn-success" onclick="connectToFriend()" 
+                    id="connectBtn" disabled>
+                <span>🔗</span>
+                <span>اتصال به مخاطب</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- صفحه دوم: چت -->
+    <div class="chat-page" id="chatPage">
+        <!-- هدر چت -->
+        <header class="chat-header">
+            <div class="connection-info">
+                <div class="status-indicator"></div>
+                <span>متصل به: <span id="connectedTo">---</span></span>
+            </div>
+            
+            <button class="disconnect-btn" onclick="disconnect()">
+                قطع ارتباط
+            </button>
         </header>
-
-        <!-- محتوای چت -->
-        <main class="chat-container">
-            <!-- پیام‌ها -->
-            <div class="messages-view" id="messagesView">
-                <div class="message system">
-                    <p>👋 خوش آمدید! کد اتصال خود را تنظیم کنید و با وارد کردن کد مخاطب به هم متصل شوید.</p>
+        
+        <!-- پیام‌ها -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="message system">
+                <p>👋 به چت مستقیم خوش آمدید! اکنون می‌توانید با مخاطب خود ارتباط برقرار کنید.</p>
+            </div>
+        </div>
+        
+        <!-- کنترل‌های پایین -->
+        <div class="chat-controls">
+            <!-- انتخاب‌گر حالت -->
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('text')" title="متن">
+                    <span>📝</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('audio')" title="تماس صوتی">
+                    <span>📞</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('video')" title="تماس ویدیویی">
+                    <span>📹</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('image')" title="عکس">
+                    <span>🖼️</span>
+                </button>
+                <button class="mode-btn" onclick="setMode('file')" title="فایل">
+                    <span>📎</span>
+                </button>
+            </div>
+            
+            <!-- حالت متن -->
+            <div class="input-area active" id="textArea">
+                <div class="text-input-container">
+                    <input type="text" id="textInput" placeholder="پیام خود را بنویسید...">
+                    <button class="send-btn" onclick="sendMessage()" id="sendBtn" disabled>
+                        <span>📤</span>
+                    </button>
                 </div>
             </div>
-
-            <!-- کنترل‌های پایین -->
-            <div class="controls-container">
-                <!-- انتخاب‌گر حالت -->
-                <div class="mode-selector">
-                    <button class="mode-btn active" onclick="setMode('text')" title="متن">
-                        <span>📝</span>
-                    </button>
-                    <button class="mode-btn" onclick="setMode('audio')" title="صدا">
-                        <span>🎙️</span>
-                    </button>
-                    <button class="mode-btn" onclick="setMode('video')" title="ویدیو">
-                        <span>📹</span>
-                    </button>
-                    <button class="mode-btn" onclick="setMode('image')" title="عکس">
-                        <span>🖼️</span>
-                    </button>
-                    <button class="mode-btn" onclick="setMode('file')" title="فایل">
-                        <span>📎</span>
-                    </button>
-                </div>
-
-                <!-- حالت متن -->
-                <div class="input-area active" id="textArea">
-                    <div class="text-input-wrapper">
-                        <input type="text" id="textInput" placeholder="پیام خود را بنویسید...">
-                        <button class="btn btn-primary" onclick="sendMessage()" id="sendBtn" disabled>
-                            <span>📤</span>
-                            <span>ارسال</span>
+            
+            <!-- حالت تماس صوتی -->
+            <div class="input-area" id="audioArea">
+                <div class="call-container">
+                    <div class="call-controls">
+                        <button class="call-btn" onclick="toggleAudioCall()" id="audioCallBtn">
+                            <span>📞</span>
+                        </button>
+                        <button class="call-btn end-call" onclick="endCall()" id="endCallBtn" style="display: none;">
+                            <span>📴</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- حالت صدا -->
-                <div class="input-area" id="audioArea">
-                    <div class="media-controls">
-                        <button class="upload-btn" onclick="toggleAudioCall()" id="audioCallBtn">
-                            <span>🎙️</span>
-                            <span>شروع تماس صوتی</span>
-                        </button>
-                        <div id="audioStatus"></div>
+                    <div id="callStatus" style="text-align: center; color: #666; padding: 10px;">
+                        آماده برای تماس صوتی
                     </div>
                 </div>
-
-                <!-- حالت ویدیو -->
-                <div class="input-area" id="videoArea">
-                    <div class="media-controls">
-                        <button class="upload-btn" onclick="toggleVideoCall()" id="videoCallBtn">
-                            <span>📹</span>
-                            <span>شروع تماس ویدیویی</span>
-                        </button>
-                        
-                        <div class="video-container">
-                            <video id="localVideo" class="video-element" autoplay muted playsinline></video>
-                            <div class="video-controls">
-                                <button class="video-btn" onclick="toggleVideoMute()" id="videoMuteBtn">
-                                    <span>🎤</span>
-                                </button>
-                                <button class="video-btn" onclick="toggleVideo()" id="videoToggleBtn">
-                                    <span>📹</span>
-                                </button>
-                                <button class="video-btn active" onclick="endVideoCall()" id="endVideoBtn">
-                                    <span>📞</span>
-                                </button>
+            </div>
+            
+            <!-- حالت تماس ویدیویی -->
+            <div class="input-area" id="videoArea">
+                <div class="call-container">
+                    <div class="video-grid">
+                        <div class="video-wrapper local">
+                            <div class="video-label">دوربین شما</div>
+                            <video id="localVideo" autoplay muted playsinline></video>
+                            <div class="video-overlay" id="localVideoOverlay" style="display: none;">
+                                دوربین خاموش
                             </div>
                         </div>
                         
-                        <div class="video-container">
-                            <video id="remoteVideo" class="video-element" autoplay playsinline></video>
+                        <div class="video-wrapper remote">
+                            <div class="video-label">دوربین مخاطب</div>
+                            <video id="remoteVideo" autoplay playsinline></video>
+                            <div class="video-overlay" id="remoteVideoOverlay">
+                                منتظر اتصال...
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- حالت عکس -->
-                <div class="input-area" id="imageArea">
-                    <div class="media-controls">
-                        <input type="file" accept="image/*" id="imageInput" hidden 
-                               onchange="previewImage(this.files[0])">
-                        <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
-                            <span>📁</span>
-                            <span>انتخاب عکس</span>
+                    
+                    <div class="call-controls">
+                        <button class="call-btn" onclick="toggleVideoCall()" id="videoCallBtn">
+                            <span>📹</span>
                         </button>
-                        <div class="preview-area" id="imagePreview"></div>
-                        <button class="btn btn-primary" onclick="sendImage()" id="sendImageBtn" disabled>
-                            <span>📤</span>
-                            <span>ارسال عکس</span>
+                        <button class="call-btn" onclick="toggleVideoMute()" id="videoMuteBtn">
+                            <span>🎤</span>
                         </button>
-                    </div>
-                </div>
-
-                <!-- حالت فایل -->
-                <div class="input-area" id="fileArea">
-                    <div class="media-controls">
-                        <input type="file" id="fileInput" hidden 
-                               onchange="previewFile(this.files[0])">
-                        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                            <span>📁</span>
-                            <span>انتخاب فایل</span>
+                        <button class="call-btn" onclick="toggleVideo()" id="videoToggleBtn">
+                            <span>📷</span>
                         </button>
-                        <div class="preview-area" id="filePreview"></div>
-                        <button class="btn btn-primary" onclick="sendFile()" id="sendFileBtn" disabled>
-                            <span>📤</span>
-                            <span>ارسال فایل</span>
+                        <button class="call-btn end-call" onclick="endCall()" id="endVideoCallBtn" style="display: none;">
+                            <span>📴</span>
                         </button>
                     </div>
                 </div>
             </div>
-        </main>
+            
+            <!-- حالت عکس -->
+            <div class="input-area" id="imageArea">
+                <div class="media-upload-container">
+                    <input type="file" accept="image/*" id="imageInput" hidden 
+                           onchange="previewImage(this.files[0])">
+                    <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+                        <span>📁</span>
+                        <span>انتخاب عکس</span>
+                    </button>
+                    <div class="preview-box" id="imagePreview"></div>
+                    <button class="btn btn-primary" onclick="sendImage()" id="sendImageBtn" disabled>
+                        <span>📤</span>
+                        <span>ارسال عکس</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- حالت فایل -->
+            <div class="input-area" id="fileArea">
+                <div class="media-upload-container">
+                    <input type="file" id="fileInput" hidden 
+                           onchange="previewFile(this.files[0])">
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        <span>📁</span>
+                        <span>انتخاب فایل</span>
+                    </button>
+                    <div class="preview-box" id="filePreview"></div>
+                    <button class="btn btn-primary" onclick="sendFile()" id="sendFileBtn" disabled>
+                        <span>📤</span>
+                        <span>ارسال فایل</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- اسکریپت‌ها -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script>
         // ==================== متغیرهای اصلی ====================
@@ -690,23 +730,36 @@
         let mediaConnection = null;
         let localStream = null;
         let remoteStream = null;
-        let peerConnection = null;
         let myCode = null;
+        let friendCode = null;
         let currentMode = 'text';
         let isInCall = false;
 
-        // ==================== مدیریت شناسه ====================
+        // ==================== مدیریت صفحات ====================
+        function showChatPage() {
+            document.getElementById('setupPage').classList.add('hidden');
+            document.getElementById('chatPage').classList.add('active');
+            document.getElementById('textInput').focus();
+        }
+        
+        function showSetupPage() {
+            document.getElementById('setupPage').classList.remove('hidden');
+            document.getElementById('chatPage').classList.remove('active');
+            disconnect();
+        }
+
+        // ==================== تنظیم کد کاربر ====================
         function setMyCode() {
             const codeInput = document.getElementById('myCodeInput').value.trim();
             
             if (!codeInput || codeInput.length < 3) {
-                alert('لطفاً یک کد معتبر (حداقل ۳ رقم) وارد کنید.');
+                showNotification('لطفاً یک کد معتبر (حداقل ۳ رقم) وارد کنید.');
                 return;
             }
             
-            myCode = codeInput.padStart(9, '0').slice(-9); // تبدیل به ۹ رقم
+            myCode = codeInput.padStart(9, '0').slice(-9);
             
-            // ایجاد Peer با کد انتخابی کاربر
+            // ایجاد Peer با کد انتخابی
             peer = new Peer(myCode, {
                 host: '0.peerjs.com',
                 port: 443,
@@ -714,79 +767,65 @@
                 debug: 2
             });
             
-            setupPeerEvents();
+            // رویدادهای Peer
+            peer.on('open', () => {
+                document.getElementById('setCodeBtn').disabled = true;
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('myCodeInput').disabled = true;
+                showNotification('کد شما تنظیم شد!');
+            });
             
-            document.getElementById('setCodeBtn').disabled = true;
-            document.getElementById('copyCodeBtn').disabled = false;
-            document.getElementById('connectBtn').disabled = false;
-            document.getElementById('myCodeInput').disabled = true;
+            peer.on('connection', (conn) => {
+                handleIncomingConnection(conn);
+            });
             
-            updateStatus('🟢 آنلاین - منتظر اتصال', '#4CAF50');
-            addSystemMessage(`کد شما تنظیم شد: ${myCode}`);
+            peer.on('call', (call) => {
+                handleIncomingCall(call);
+            });
+            
+            peer.on('error', (err) => {
+                console.error('خطای PeerJS:', err);
+                showNotification(`خطا: ${err.type}`);
+            });
         }
-        
-        function copyMyCode() {
-            if (!myCode) return;
-            navigator.clipboard.writeText(myCode);
-            showNotification('کد کپی شد!');
-        }
-        
+
         // ==================== اتصال به مخاطب ====================
         function connectToFriend() {
-            const friendCode = document.getElementById('friendCodeInput').value.trim();
+            friendCode = document.getElementById('friendCodeInput').value.trim();
             
             if (!friendCode || !peer) {
-                alert('لطفاً ابتدا کد خود را تنظیم کنید و سپس کد مخاطب را وارد نمایید.');
+                showNotification('لطفاً ابتدا کد خود را تنظیم کنید.');
                 return;
             }
             
             if (friendCode === myCode) {
-                alert('نمی‌توانید به خودتان متصل شوید!');
+                showNotification('نمی‌توانید به خودتان متصل شوید!');
                 return;
             }
             
+            friendCode = friendCode.padStart(9, '0').slice(-9);
+            
             // اتصال داده
-            dataConnection = peer.connect(friendCode.padStart(9, '0').slice(-9));
+            dataConnection = peer.connect(friendCode);
             setupDataConnection();
             
-            addSystemMessage(`در حال اتصال به ${friendCode}...`);
+            showNotification(`در حال اتصال به ${friendCode}...`);
         }
         
-        // ==================== رویدادهای Peer ====================
-        function setupPeerEvents() {
-            peer.on('open', (id) => {
-                console.log('Peer created with ID:', id);
-            });
-            
-            peer.on('connection', (conn) => {
-                dataConnection = conn;
-                setupDataConnection();
-                addSystemMessage(`${conn.peer} به شما متصل شد.`);
-            });
-            
-            peer.on('call', (call) => {
-                mediaConnection = call;
-                
-                if (currentMode === 'audio' || currentMode === 'video') {
-                    answerCall(call);
-                } else {
-                    addSystemMessage('📞 تماس دریافتی. لطفاً به حالت صدا یا ویدیو بروید.');
-                }
-            });
-            
-            peer.on('error', (err) => {
-                console.error('PeerJS Error:', err);
-                updateStatus('🔴 خطا', '#F44336');
-                addSystemMessage(`خطا: ${err.type}`);
-            });
+        function handleIncomingConnection(conn) {
+            dataConnection = conn;
+            friendCode = conn.peer;
+            setupDataConnection();
         }
-        
-        // ==================== اتصال داده ====================
+
+        // ==================== تنظیم اتصال داده ====================
         function setupDataConnection() {
             dataConnection.on('open', () => {
-                updateStatus('🟢 متصل', '#4CAF50');
+                document.getElementById('connectedTo').textContent = friendCode;
                 document.getElementById('sendBtn').disabled = false;
-                addSystemMessage('✅ اتصال برقرار شد!');
+                
+                showNotification('اتصال برقرار شد!');
+                showChatPage();
                 
                 // ارسال اطلاعات اولیه
                 dataConnection.send({
@@ -801,69 +840,60 @@
             });
             
             dataConnection.on('close', () => {
-                updateStatus('🔴 قطع', '#F44336');
+                showNotification('اتصال قطع شد.');
+                endCall();
                 document.getElementById('sendBtn').disabled = true;
-                addSystemMessage('❌ اتصال قطع شد.');
-                isInCall = false;
-                endMediaCall();
+                document.getElementById('connectedTo').textContent = '---';
             });
         }
-        
+
         // ==================== مدیریت تماس‌های رسانه‌ای ====================
         async function toggleAudioCall() {
             if (!dataConnection || !dataConnection.open) {
-                alert('ابتدا باید به مخاطب متصل شوید.');
+                showNotification('ابتدا باید به مخاطب متصل شوید.');
                 return;
             }
             
             if (isInCall) {
-                endMediaCall();
+                endCall();
                 return;
             }
             
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    },
                     video: false
                 });
                 
-                const call = peer.call(dataConnection.peer, localStream);
-                mediaConnection = call;
-                
-                call.on('stream', (remoteStream) => {
-                    // برای تماس صوتی، صدا را پخش می‌کنیم
-                    const audio = new Audio();
-                    audio.srcObject = remoteStream;
-                    audio.play();
-                    
-                    document.getElementById('audioCallBtn').innerHTML = `
-                        <span>📞</span>
-                        <span>پایان تماس</span>
-                    `;
-                    
-                    document.getElementById('audioStatus').innerHTML = `
-                        <div style="color: #4CAF50; text-align: center; padding: 10px;">
-                            ✅ در حال تماس صوتی...
-                        </div>
-                    `;
-                    
-                    isInCall = true;
+                const call = peer.call(friendCode, localStream, {
+                    metadata: { type: 'audio' }
                 });
                 
+                mediaConnection = call;
+                setupMediaCall(call, 'audio');
+                
+                document.getElementById('audioCallBtn').style.display = 'none';
+                document.getElementById('endCallBtn').style.display = 'flex';
+                document.getElementById('callStatus').textContent = '📞 در حال تماس صوتی...';
+                
             } catch (err) {
-                console.error('Error starting audio call:', err);
-                alert('دسترسی به میکروفن ممکن نیست.');
+                console.error('خطا در شروع تماس صوتی:', err);
+                showNotification('دسترسی به میکروفن ممکن نیست.');
             }
         }
         
         async function toggleVideoCall() {
             if (!dataConnection || !dataConnection.open) {
-                alert('ابتدا باید به مخاطب متصل شوید.');
+                showNotification('ابتدا باید به مخاطب متصل شوید.');
                 return;
             }
             
             if (isInCall) {
-                endVideoCall();
+                endCall();
                 return;
             }
             
@@ -878,36 +908,58 @@
                 });
                 
                 document.getElementById('localVideo').srcObject = localStream;
+                document.getElementById('localVideoOverlay').style.display = 'none';
                 
-                const call = peer.call(dataConnection.peer, localStream);
-                mediaConnection = call;
-                
-                call.on('stream', (stream) => {
-                    remoteStream = stream;
-                    document.getElementById('remoteVideo').srcObject = remoteStream;
-                    
-                    document.getElementById('videoCallBtn').innerHTML = `
-                        <span>📞</span>
-                        <span>پایان تماس</span>
-                    `;
-                    
-                    isInCall = true;
+                const call = peer.call(friendCode, localStream, {
+                    metadata: { type: 'video' }
                 });
                 
+                mediaConnection = call;
+                setupMediaCall(call, 'video');
+                
+                document.getElementById('videoCallBtn').style.display = 'none';
+                document.getElementById('endVideoCallBtn').style.display = 'flex';
+                
             } catch (err) {
-                console.error('Error starting video call:', err);
-                alert('دسترسی به دوربین ممکن نیست.');
+                console.error('خطا در شروع تماس ویدیویی:', err);
+                showNotification('دسترسی به دوربین ممکن نیست.');
             }
         }
         
-        async function answerCall(call) {
+        function setupMediaCall(call, type) {
+            isInCall = true;
+            
+            call.on('stream', (stream) => {
+                if (type === 'video') {
+                    remoteStream = stream;
+                    document.getElementById('remoteVideo').srcObject = remoteStream;
+                    document.getElementById('remoteVideoOverlay').style.display = 'none';
+                } else {
+                    // برای تماس صوتی، صدا را پخش می‌کنیم
+                    const audio = new Audio();
+                    audio.srcObject = stream;
+                    audio.play();
+                }
+                
+                showNotification(`✅ تماس ${type === 'video' ? 'ویدیویی' : 'صوتی'} برقرار شد.`);
+            });
+            
+            call.on('close', () => {
+                endCall();
+            });
+        }
+        
+        async function handleIncomingCall(call) {
             try {
-                if (call.metadata.type === 'video') {
+                const metadata = call.metadata || {};
+                
+                if (metadata.type === 'video') {
                     localStream = await navigator.mediaDevices.getUserMedia({
                         audio: true,
                         video: true
                     });
                     document.getElementById('localVideo').srcObject = localStream;
+                    document.getElementById('localVideoOverlay').style.display = 'none';
                 } else {
                     localStream = await navigator.mediaDevices.getUserMedia({
                         audio: true,
@@ -916,11 +968,13 @@
                 }
                 
                 call.answer(localStream);
+                mediaConnection = call;
                 
                 call.on('stream', (stream) => {
-                    if (call.metadata.type === 'video') {
+                    if (metadata.type === 'video') {
                         remoteStream = stream;
                         document.getElementById('remoteVideo').srcObject = remoteStream;
+                        document.getElementById('remoteVideoOverlay').style.display = 'none';
                         setMode('video');
                     } else {
                         const audio = new Audio();
@@ -931,16 +985,25 @@
                     
                     isInCall = true;
                     
-                    addSystemMessage(`✅ تماس ${call.metadata.type === 'video' ? 'ویدیویی' : 'صوتی'} برقرار شد.`);
+                    if (metadata.type === 'video') {
+                        document.getElementById('videoCallBtn').style.display = 'none';
+                        document.getElementById('endVideoCallBtn').style.display = 'flex';
+                    } else {
+                        document.getElementById('audioCallBtn').style.display = 'none';
+                        document.getElementById('endCallBtn').style.display = 'flex';
+                        document.getElementById('callStatus').textContent = '📞 در حال تماس صوتی...';
+                    }
+                    
+                    showNotification(`📞 تماس ${metadata.type === 'video' ? 'ویدیویی' : 'صوتی'} دریافت شد.`);
                 });
                 
             } catch (err) {
-                console.error('Error answering call:', err);
+                console.error('خطا در پاسخ به تماس:', err);
                 call.close();
             }
         }
         
-        function endVideoCall() {
+        function endCall() {
             if (mediaConnection) {
                 mediaConnection.close();
                 mediaConnection = null;
@@ -949,57 +1012,29 @@
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
-                document.getElementById('localVideo').srcObject = null;
             }
             
             if (remoteStream) {
                 remoteStream.getTracks().forEach(track => track.stop());
                 remoteStream = null;
-                document.getElementById('remoteVideo').srcObject = null;
             }
             
-            document.getElementById('videoCallBtn').innerHTML = `
-                <span>📹</span>
-                <span>شروع تماس ویدیویی</span>
-            `;
-            
-            document.getElementById('audioStatus').innerHTML = '';
             isInCall = false;
+            
+            // بازنشانی کنترل‌های تماس
+            document.getElementById('audioCallBtn').style.display = 'flex';
+            document.getElementById('endCallBtn').style.display = 'none';
+            document.getElementById('videoCallBtn').style.display = 'flex';
+            document.getElementById('endVideoCallBtn').style.display = 'none';
+            document.getElementById('callStatus').textContent = 'آماده برای تماس صوتی';
+            
+            // بازنشانی ویدیوها
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            document.getElementById('localVideoOverlay').style.display = 'flex';
+            document.getElementById('remoteVideoOverlay').style.display = 'flex';
+            
             setMode('text');
-        }
-        
-        function endMediaCall() {
-            if (mediaConnection) {
-                mediaConnection.close();
-                mediaConnection = null;
-            }
-            
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            if (remoteStream) {
-                remoteStream.getTracks().forEach(track => track.stop());
-                remoteStream = null;
-            }
-            
-            isInCall = false;
-            
-            if (currentMode === 'audio') {
-                document.getElementById('audioCallBtn').innerHTML = `
-                    <span>🎙️</span>
-                    <span>شروع تماس صوتی</span>
-                `;
-                document.getElementById('audioStatus').innerHTML = '';
-            }
-            
-            if (currentMode === 'video') {
-                document.getElementById('videoCallBtn').innerHTML = `
-                    <span>📹</span>
-                    <span>شروع تماس ویدیویی</span>
-                `;
-            }
         }
         
         function toggleVideoMute() {
@@ -1007,8 +1042,8 @@
                 const audioTrack = localStream.getAudioTracks()[0];
                 if (audioTrack) {
                     audioTrack.enabled = !audioTrack.enabled;
-                    document.getElementById('videoMuteBtn').style.background = 
-                        audioTrack.enabled ? 'rgba(255,255,255,0.2)' : '#F44336';
+                    document.getElementById('videoMuteBtn').innerHTML = 
+                        audioTrack.enabled ? '<span>🎤</span>' : '<span>🔇</span>';
                 }
             }
         }
@@ -1018,12 +1053,14 @@
                 const videoTrack = localStream.getVideoTracks()[0];
                 if (videoTrack) {
                     videoTrack.enabled = !videoTrack.enabled;
-                    document.getElementById('videoToggleBtn').style.background = 
-                        videoTrack.enabled ? 'rgba(255,255,255,0.2)' : '#F44336';
+                    document.getElementById('videoToggleBtn').innerHTML = 
+                        videoTrack.enabled ? '<span>📷</span>' : '<span>📵</span>';
+                    document.getElementById('localVideoOverlay').style.display = 
+                        videoTrack.enabled ? 'none' : 'flex';
                 }
             }
         }
-        
+
         // ==================== ارسال پیام‌ها ====================
         function sendMessage() {
             const input = document.getElementById('textInput');
@@ -1039,7 +1076,7 @@
             };
             
             dataConnection.send(messageData);
-            addMessage(message, 'local');
+            addMessage(message, 'outgoing');
             input.value = '';
             input.focus();
         }
@@ -1060,7 +1097,7 @@
                 };
                 
                 dataConnection.send(imageData);
-                addMessage('عکس ارسال شد', 'local', true);
+                addMessage('📷 عکس ارسال شد', 'outgoing');
                 document.getElementById('imagePreview').innerHTML = '';
                 document.getElementById('sendImageBtn').disabled = true;
             };
@@ -1083,110 +1120,87 @@
                 };
                 
                 dataConnection.send(fileData);
-                addMessage(`فایل "${input.files[0].name}" ارسال شد`, 'local', true);
+                addMessage(`📎 فایل "${input.files[0].name}" ارسال شد`, 'outgoing');
                 document.getElementById('filePreview').innerHTML = '';
                 document.getElementById('sendFileBtn').disabled = true;
             };
             reader.readAsDataURL(input.files[0]);
         }
-        
+
         // ==================== مدیریت داده‌های دریافتی ====================
         function handleIncomingData(data) {
             switch (data.type) {
                 case 'text':
-                    addMessage(data.content, 'remote');
+                    addMessage(data.content, 'incoming');
                     break;
                     
                 case 'image':
-                    addMessage(`📷 عکس دریافت شد: ${data.name}`, 'remote', true);
+                    addMessage('📷 عکس دریافت شد', 'incoming');
                     break;
                     
                 case 'file':
-                    addMessage(`📎 فایل دریافت شد: ${data.name} (${formatBytes(data.size)})`, 'remote', true);
+                    addMessage(`📎 فایل "${data.name}" دریافت شد`, 'incoming');
                     break;
                     
                 case 'handshake':
-                    addSystemMessage(`🤝 ${data.code} متصل شد.`);
+                    addMessage('✅ مخاطب متصل شد', 'system');
                     break;
             }
         }
-        
+
         // ==================== رابط کاربری ====================
         function setMode(mode) {
+            if (isInCall && (mode !== 'audio' && mode !== 'video' && currentMode !== 'audio' && currentMode !== 'video')) {
+                showNotification('⚠️ در حال تماس هستید. برای مدیریت تماس به حالت صدا یا ویدیو برگردید.');
+                return;
+            }
+            
             currentMode = mode;
             
             // به‌روزرسانی دکمه‌های حالت
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            event?.target.classList.add('active');
+            event.target.classList.add('active');
             
             // نمایش ناحیه مربوطه
             document.querySelectorAll('.input-area').forEach(area => area.classList.remove('active'));
             document.getElementById(`${mode}Area`).classList.add('active');
             
-            // اگر در حال تماس هستیم و حالت را تغییر دادیم
-            if (isInCall && (mode !== 'audio' && mode !== 'video')) {
-                addSystemMessage('⚠️ در حال تماس هستید. برای مدیریت تماس به حالت صدا یا ویدیو برگردید.');
+            // فوکوس روی ورودی متن
+            if (mode === 'text') {
+                setTimeout(() => {
+                    document.getElementById('textInput').focus();
+                }, 100);
             }
         }
         
-        function addMessage(text, type, isSystem = false) {
-            const messagesView = document.getElementById('messagesView');
+        function addMessage(text, type) {
+            const container = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
             
-            if (isSystem) {
-                messageDiv.className = 'message system';
-                messageDiv.innerHTML = `<p>${text}</p>`;
-            } else {
-                messageDiv.className = `message ${type}`;
-                const time = new Date().toLocaleTimeString('fa-IR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                messageDiv.innerHTML = `
-                    <p>${text}</p>
-                    <small class="message-time">${time}</small>
-                `;
-            }
+            messageDiv.className = `message ${type}`;
+            const time = new Date().toLocaleTimeString('fa-IR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
             
-            messagesView.appendChild(messageDiv);
-            messagesView.scrollTop = messagesView.scrollHeight;
-        }
-        
-        function addSystemMessage(text) {
-            addMessage(text, 'system', true);
-        }
-        
-        function updateStatus(text, color) {
-            document.getElementById('statusText').textContent = text;
-            document.getElementById('statusIcon').textContent = text.includes('آنلاین') ? '🟢' : 
-                                                              text.includes('متصل') ? '🟢' : '🔴';
-            document.getElementById('connectionStatus').style.background = 
-                `rgba(${color === '#4CAF50' ? '76,175,80' : '244,67,54'}, 0.9)`;
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <small class="message-time">${time}</small>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
         }
         
         function showNotification(text) {
             const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 70px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #4CAF50;
-                color: white;
-                padding: 15px 25px;
-                border-radius: 50px;
-                font-weight: 600;
-                z-index: 1000;
-                animation: fadeInOut 2s ease;
-                box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
-            `;
+            notification.className = 'notification';
             notification.textContent = text;
             document.body.appendChild(notification);
             
-            setTimeout(() => notification.remove(), 2000);
+            setTimeout(() => notification.remove(), 3000);
         }
         
-        // ==================== توابع کمکی ====================
         function previewImage(file) {
             if (!file) return;
             
@@ -1194,7 +1208,7 @@
             reader.onload = function(e) {
                 document.getElementById('imagePreview').innerHTML = `
                     <img src="${e.target.result}" style="max-width: 200px; border-radius: 10px;">
-                    <p style="margin-top: 10px;">${file.name} (${formatBytes(file.size)})</p>
+                    <p style="margin-top: 10px;">${file.name}</p>
                 `;
                 document.getElementById('sendImageBtn').disabled = false;
             };
@@ -1208,7 +1222,6 @@
                 <div style="font-size: 3rem;">📄</div>
                 <p style="font-weight: 600; margin: 10px 0;">${file.name}</p>
                 <p>${formatBytes(file.size)}</p>
-                <p style="color: #666; font-size: 0.9rem;">${file.type || 'نوع نامشخص'}</p>
             `;
             document.getElementById('sendFileBtn').disabled = false;
         }
@@ -1216,22 +1229,44 @@
         function formatBytes(bytes, decimals = 2) {
             if (bytes === 0) return '0 بایت';
             const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
             const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
         }
         
+        function disconnect() {
+            if (dataConnection) dataConnection.close();
+            if (mediaConnection) mediaConnection.close();
+            if (peer) peer.destroy();
+            
+            peer = null;
+            dataConnection = null;
+            mediaConnection = null;
+            localStream = null;
+            remoteStream = null;
+            myCode = null;
+            friendCode = null;
+            isInCall = false;
+            
+            // بازنشانی فرم
+            document.getElementById('myCodeInput').value = '';
+            document.getElementById('friendCodeInput').value = '';
+            document.getElementById('myCodeInput').disabled = false;
+            document.getElementById('setCodeBtn').disabled = false;
+            document.getElementById('connectBtn').disabled = true;
+            
+            // پاک کردن پیام‌ها
+            document.getElementById('messagesContainer').innerHTML = `
+                <div class="message system">
+                    <p>👋 به چت مستقیم خوش آمدید! اکنون می‌توانید با مخاطب خود ارتباط برقرار کنید.</p>
+                </div>
+            `;
+            
+            showSetupPage();
+        }
+
         // ==================== تنظیمات اولیه ====================
         document.addEventListener('DOMContentLoaded', function() {
-            // تنظیم ارتفاع دینامیک برای موبایل
-            function setVH() {
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-            }
-            setVH();
-            window.addEventListener('resize', setVH);
-            
             // ارسال با Enter
             document.getElementById('textInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') sendMessage();
@@ -1241,17 +1276,16 @@
             document.querySelectorAll('input[type="number"]').forEach(input => {
                 input.addEventListener('wheel', e => e.preventDefault());
             });
-        });
-        
-        // ایجاد استایل برای انیمیشن fadeInOut
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInOut {
-                0%, 100% { opacity: 0; transform: translate(-50%, -20px); }
-                10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+            
+            // مدیریت ارتفاع در موبایل
+            function setAppHeight() {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--app-height', `${vh}px`);
             }
-        `;
-        document.head.appendChild(style);
+            
+            setAppHeight();
+            window.addEventListener('resize', setAppHeight);
+        });
     </script>
 </body>
 </html>
